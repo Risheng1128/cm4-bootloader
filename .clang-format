@@ -1,0 +1,14 @@
+Language: Cpp
+BasedOnStyle: Chromium
+IndentCaseLabels: false
+AllowShortIfStatementsOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+DerivePointerAlignment: false
+PointerAlignment: Right
+SpaceAfterCStyleCast: true
+TabWidth: 4
+UseTab: Never
+IndentWidth: 4
+BreakBeforeBraces: Linux
+AccessModifierOffset: -4
