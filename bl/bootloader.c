@@ -15,53 +15,21 @@
 #define BL_BUFFER_SIZE 256
 
 /* bootloader commands definition */
-/* get the version and the allowed commands supported by the current
- * version of the protocol
- */
 #define BL_GET_CMD 0x00
-/* get the protocol version */
 #define BL_GET_VERSION 0x01
-/* get the chip ID */
 #define BL_GET_ID 0x02
-/* get the protection level status */
 #define BL_GET_PROTECT_LEVEL 0x03
-/* read up to 256 bytes of memory starting from an address specified
- * by the application
- */
 #define BL_READ_MEM 0x11
-/* jump to user application code located in the internal flash memory or
- * in the SRAM
- */
 #define BL_JUMP_TO_APP 0x21
-/* write up to 256 bytes to the RAM or flash memory starting from an
- * address specified by the application
- */
 #define BL_WRITE_MEM 0x31
-/* erase from one to all the flash memory pages */
 #define BL_ERASE_MEM 0x43
-/* erase from one to all the flash memory pages using two-byte
- * addressing mode
- */
 #define BL_ERASE_MEM_EXT 0x44
-/* generic command that allows to add new features depending on the
- * product constraints, without adding a new command for every feature
- */
 #define BL_SPECIAL 0x50
-/* generic command that allows the user to send more data compared to
- * the special command
- */
 #define BL_SPECIAL_EXT 0x51
-/* enable the write protection for some sectors */
 #define BL_WRITE_PROTECT 0x63
-/* disable the write protection for all flash memory sectors */
 #define BL_WRITE_UNPROTECT 0x73
-/* enables the read protection */
 #define BL_READ_PROTECT 0x82
-/* disables the read protection */
 #define BL_READ_UNPROTECT 0x92
-/* compute a CRC value on a given memory area with a size
- * multiple of 4 bytes
- */
 #define BL_GET_CHECKSUM 0xA1
 
 /* bootloader commands reply length */
@@ -121,7 +89,10 @@ static bool bl_crc_verify(struct bl_command *command,
     return res == crc;
 }
 
-/* handle BL_GET_CMD */
+/* handle BL_GET_CMD
+ * Get the version and the allowed commands supported by the current
+ * version of the protocol
+ */
 static void bl_get_cmd(struct bl_command *command)
 {
     uint32_t crc = *(uint32_t *) command->crc;
@@ -146,7 +117,9 @@ static void bl_get_cmd(struct bl_command *command)
     bl_send_data((uint8_t *) all_comand, BL_GET_CMD_LEN);
 }
 
-/* handle BL_GET_VERSION */
+/* handle BL_GET_VERSION
+ * Get the protocol version
+ */
 static void bl_get_version(struct bl_command *command)
 {
     uint32_t crc = *(uint32_t *) command->crc;
@@ -169,7 +142,9 @@ static void bl_get_version(struct bl_command *command)
 /* MCU device ID code */
 #define DBGMCU *(volatile uint32_t *) 0xE0042000U
 
-/* handle BL_GET_ID */
+/* handle BL_GET_ID
+ * Get the chip ID
+ */
 static void bl_get_id(struct bl_command *command)
 {
     uint32_t crc = *(uint32_t *) command->crc;
@@ -188,7 +163,9 @@ static void bl_get_id(struct bl_command *command)
     bl_send_data((uint8_t *) &DBGMCU, BL_GET_ID_LEN);
 }
 
-/* handle BL_GET_PROTECT_LEVEL */
+/* handle BL_GET_PROTECT_LEVEL
+ * Get the protection level status
+ */
 static void bl_get_protect_level(struct bl_command *command)
 {
     uint32_t crc = *(uint32_t *) command->crc;
@@ -207,10 +184,16 @@ static void bl_get_protect_level(struct bl_command *command)
     bl_send_data(&protect_level, BL_GET_PROTECT_LEVEL_LEN);
 }
 
-/* handle BL_READ_MEM */
+/* handle BL_READ_MEM
+ * Read up to 256 bytes of memory starting from an address specified
+ * by the application
+ */
 static void bl_read_mem(struct bl_command *command) {}
 
-/* handle BL_JUMP_TO_APP */
+/* handle BL_JUMP_TO_APP
+ * Jump to user application code located in the internal flash memory or
+ * in the SRAM
+ */
 static void bl_jump_to_app(struct bl_command *command)
 {
     uint32_t crc = *(uint32_t *) command->crc;
@@ -240,34 +223,57 @@ static void bl_jump_to_app(struct bl_command *command)
     app_reset_handler();
 }
 
-/* handle BL_WRITE_MEM */
+/* handle BL_WRITE_MEM
+ * Write up to 256 bytes to the RAM or flash memory starting from an
+ * address specified by the application
+ */
 static void bl_write_mem(struct bl_command *command) {}
 
-/* handle BL_ERASE_MEM */
+/* handle BL_ERASE_MEM
+ * Erase from one to all the flash memory pages
+ */
 static void bl_erase_mem(struct bl_command *command) {}
 
-/* handle BL_ERASE_MEM_EXT */
+/* handle BL_ERASE_MEM_EXT
+ * Erase from one to all the flash memory pages using two-byte addressing mode
+ */
 static void bl_erase_mem_ext(struct bl_command *command) {}
 
-/* handle BL_SPECIAL */
+/* handle BL_SPECIAL
+ * Generic command that allows to add new features depending on the product
+ * constraints, without adding a new command for every feature
+ */
 static void bl_special(struct bl_command *command) {}
 
-/* handle BL_SPECIAL_EXT */
+/* handle BL_SPECIAL_EXT
+ * Generic command that allows the user to send more data compared to
+ * the special command
+ */
 static void bl_special_ext(struct bl_command *command) {}
 
-/* handle BL_WRITE_PROTECT */
+/* handle BL_WRITE_PROTECT
+ * Enable the write protection for some sectors
+ */
 static void bl_write_protect(struct bl_command *command) {}
 
-/* handle BL_WRITE_UNPROTECT */
+/* handle BL_WRITE_UNPROTECT
+ * Disable the write protection for all flash memory sectors
+ */
 static void bl_write_unprotect(struct bl_command *command) {}
 
-/* handle BL_READ_PROTECT */
+/* handle BL_READ_PROTECT
+ * Enable the read protection
+ */
 static void bl_read_protect(struct bl_command *command) {}
 
-/* handle BL_READ_UNPROTECT */
+/* handle BL_READ_UNPROTECT
+ * Disable the read protection
+ */
 static void bl_read_unprotect(struct bl_command *command) {}
 
-/* handle BL_GET_CHECKSUM */
+/* handle BL_GET_CHECKSUM
+ * Compute a CRC value on a given memory area with a size multiple of 4 bytes
+ */
 static void bl_get_checksum(struct bl_command *command) {}
 
 /* read command from USART */

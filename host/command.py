@@ -3,7 +3,7 @@ import utility
 import consts as const
 
 '''
-get the version and the allowed commands supported by the current
+Get the version and the allowed commands supported by the current
 version of the protocol
 '''
 def do_get_cmd(port):
@@ -33,7 +33,7 @@ def do_get_cmd(port):
     print(' Support Command Code: ', reply)
 
 '''
-get the protocol version
+Get the protocol version
 '''
 def do_get_version(port):
     buffer = bytearray()
@@ -61,7 +61,7 @@ def do_get_version(port):
     print(' Bootloader Version: ', reply.decode('ascii'))
 
 '''
-get the chip ID
+Get the chip ID
 '''
 def do_get_id(port):
     buffer = bytearray()
@@ -92,7 +92,7 @@ def do_get_id(port):
     print(' DEV ID: ', hex(id & 0x00000fff))
 
 '''
-get the protection level status
+Get the protection level status
 '''
 def do_get_protect_level(port):
     buffer = bytearray()
@@ -127,14 +127,14 @@ def do_get_protect_level(port):
         print(' Protection Level 2 is enabled')
 
 '''
-read up to 256 bytes of memory starting from an address specified
+Read up to 256 bytes of memory starting from an address specified
 by the application
 '''
 def do_read_mem(port):
     pass
 
 '''
-jump to user application code located in the internal flash memory or
+Jump to user application code located in the internal flash memory or
 in the SRAM
 '''
 def do_jump_to_app(port):
@@ -161,64 +161,64 @@ def do_jump_to_app(port):
     raise SystemExit
 
 '''
-write up to 256 bytes to the RAM or flash memory starting from an
+Write up to 256 bytes to the RAM or flash memory starting from an
 address specified by the application
 '''
 def do_write_mem(port):
     pass
 
 '''
-erase from one to all the flash memory pages
+Erase from one to all the flash memory pages
 '''
 def do_erase_mem(port):
     pass
 
 '''
-erase from one to all the flash memory pages using two-byte addressing mode
+Erase from one to all the flash memory pages using two-byte addressing mode
 '''
 def do_erase_mem_ext(port):
     pass
 
 '''
-generic command that allows to add new features depending on the product
+Generic command that allows to add new features depending on the product
 constraints, without adding a new command for every feature
 '''
 def do_special(port):
     pass
 
 '''
-generic command that allows the user to send more data compared to
+Generic command that allows the user to send more data compared to
 the special command
 '''
 def do_special_ext(port):
     pass
 
 '''
-enable the write protection for some sectors
+Enable the write protection for some sectors
 '''
 def do_write_protect(port):
     pass
 
 '''
-disable the write protection for all flash memory sectors
+Disable the write protection for all flash memory sectors
 '''
 def do_write_unprotect(port):
     pass
 
 '''
-enables the read protection
+Enable the read protection
 '''
 def do_read_protect(port):
     pass
 
 '''
-disables the read protection
+Disable the read protection
 '''
 def do_read_unprotect(port):
     pass
 
 '''
-compute a CRC value on a given memory area with a size multiple of 4 bytes
+Compute a CRC value on a given memory area with a size multiple of 4 bytes
 '''
 def do_get_checksum(port):
     pass
