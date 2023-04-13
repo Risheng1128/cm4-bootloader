@@ -23,6 +23,8 @@
 #define BL_GET_VERSION 0x01
 /* get the chip ID */
 #define BL_GET_ID 0x02
+/* get the protection level status */
+#define BL_GET_PROTECT_LEVEL 0x03
 /* read up to 256 bytes of memory starting from an address specified
  * by the application
  */
@@ -66,6 +68,7 @@
 #define BL_GET_CMD_LEN 15
 #define BL_GET_VERSION_LEN 3
 #define BL_GET_ID_LEN 4
+#define BL_GET_PROTECT_LEVEL_LEN 1
 #define BL_JUMP_TO_APP_LEN 0
 
 struct bl_command {
@@ -185,6 +188,25 @@ static void bl_get_id(struct bl_command *command)
     bl_send_data((uint8_t *) &DBGMCU, BL_GET_ID_LEN);
 }
 
+/* handle BL_GET_PROTECT_LEVEL */
+static void bl_get_protect_level(struct bl_command *command)
+{
+    uint32_t crc = *(uint32_t *) command->crc;
+
+    /* CRC verify failed */
+    if (!bl_crc_verify(command, 2, crc)) {
+        /* send nack to host */
+        bl_send_nack();
+        return;
+    }
+
+    /* send ack */
+    bl_send_ack(BL_GET_PROTECT_LEVEL_LEN);
+
+    uint8_t protect_level = (FLASH_OBR & 0x00000006) >> 1;
+    bl_send_data(&protect_level, BL_GET_PROTECT_LEVEL_LEN);
+}
+
 /* handle BL_READ_MEM */
 static void bl_read_mem(struct bl_command *command) {}
 
@@ -276,6 +298,9 @@ void bl_read_command(void)
         break;
     case BL_GET_ID:
         bl_get_id(&command);
+        break;
+    case BL_GET_PROTECT_LEVEL:
+        bl_get_protect_level(&command);
         break;
     case BL_READ_MEM:
         bl_read_mem(&command);

@@ -92,6 +92,41 @@ def do_get_id(port):
     print(' DEV ID: ', hex(id & 0x00000fff))
 
 '''
+get the protection level status
+'''
+def do_get_protect_level(port):
+    buffer = bytearray()
+    # add command code
+    buffer.append(const.BL_GET_PROTECT_LEVEL)
+    # add command buffer length
+    buffer.append(const.BL_GET_PROTECT_LEVEL_LEN)
+    crc = utility.compute_crc(buffer)
+    for i in crc.to_bytes(4, 'little'):
+        buffer.append(i)
+
+    # send command
+    utility.serial_port_write(port, buffer)
+
+    # read ACK/NACK
+    ack_or_nack = utility.serial_port_read(port, 1)
+    ack_or_nack = int.from_bytes(ack_or_nack, 'little')
+    if ack_or_nack == const.NACK:
+        print(' Read NACK')
+        return
+
+    print(' Read protection level status ...')
+    reply_len = utility.serial_port_read(port, 1)
+    reply_len = int.from_bytes(reply_len, 'little')
+    reply = utility.serial_port_read(port, reply_len)
+    id = int.from_bytes(reply, 'little')
+    if id == 0:
+        print(' Protection Level 0 is enabled')
+    elif id == 1:
+        print(' Protection Level 1 is enabled')
+    elif id == 3:
+        print(' Protection Level 2 is enabled')
+
+'''
 read up to 256 bytes of memory starting from an address specified
 by the application
 '''
@@ -202,49 +237,52 @@ def decode_command_code(port, command_code):
         case (3):  # BL_GET_ID
             print(' Command --> BL_GET_ID')
             do_get_id(port)
-        case (4):  # BL_READ_MEM
+        case (4):  # BL_GET_PROTECT_LEVEL
+            print(' Command --> BL_GET_PROTECT_LEVEL')
+            do_get_protect_level(port)
+        case (5):  # BL_READ_MEM
             print(' Command --> BL_READ_MEM')
             do_read_mem(port)
-        case (5):  # BL_JUMP_TO_APP
+        case (6):  # BL_JUMP_TO_APP
             print(' Command --> BL_JUMP_TO_APP')
             do_jump_to_app(port)
-        case (6):  # BL_WRITE_MEM
+        case (7):  # BL_WRITE_MEM
             print(' Command --> BL_WRITE_MEM')
             do_write_mem(port)
-        case (7):  # BL_ERASE_MEM
+        case (8):  # BL_ERASE_MEM
             print(' Command --> BL_ERASE_MEM')
             do_erase_mem(port)
-        case (8):  # BL_ERASE_MEM_EXT
+        case (9):  # BL_ERASE_MEM_EXT
             print(' Command --> BL_ERASE_MEM_EXT')
             do_erase_mem_ext(port)
-        case (9):  # BL_SPECIAL
+        case (10):  # BL_SPECIAL
             print(' Command --> BL_SPECIAL')
             do_special(port)
-        case (10): # BL_SPECIAL_EXT
+        case (11): # BL_SPECIAL_EXT
             print(' Command --> BL_SPECIAL_EXT')
             do_special_ext(port)
-        case (11): # BL_WRITE_PROTECT
+        case (12): # BL_WRITE_PROTECT
             print(' Command --> BL_WRITE_PROTECT')
             do_write_protect(port)
-        case (12): # BL_WRITE_UNPROTECT
+        case (13): # BL_WRITE_UNPROTECT
             print(' Command --> BL_WRITE_UNPROTECT')
             do_write_unprotect(port)
-        case (13): # BL_READ_PROTECT
+        case (14): # BL_READ_PROTECT
             print(' Command --> BL_READ_PROTECT')
             do_read_protect(port)
-        case (14): # BL_READ_UNPROTECT
+        case (15): # BL_READ_UNPROTECT
             print(' Command --> BL_READ_UNPROTECT')
             do_read_unprotect(port)
-        case (15): # BL_GET_CHECKSUM
+        case (16): # BL_GET_CHECKSUM
             print(' Command --> BL_GET_CHECKSUM')
             do_get_checksum(port)
-        case (16):
+        case (17):
             # display all valid serial ports
             print(' show valid ports... ')
             utility.serial_port_list()
-        case (17):
-            os.system('clear')
         case (18):
+            os.system('clear')
+        case (19):
             # display command menu
             utility.print_menu()
         case _:

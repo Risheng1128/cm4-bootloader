@@ -116,29 +116,31 @@ The following picture shows the command package format.
 ## Bootloader commands
 The following shows all commands provided by `cm4-bootloader`. It refers to [USART protocol used in the STM32 bootloader](https://www.st.com/resource/en/application_note/an3155-usart-protocol-used-in-the-stm32-bootloader-stmicroelectronics.pdf).
 
-| command            | code | description |
-| ------------------ | ---- | ----------- |
-| BL_GET_CMD         | 0x00 | Get the version and the allowed commands supported by the current version of the protocol |
-| BL_GET_VERSION     | 0x01 | Get the protocol version |
-| BL_GET_ID          | 0x02 | Get the chip ID |
-| BL_READ_MEM        | 0x11 | Read up to 256 bytes of memory starting from an address specified by the application |
-| BL_JUMP_TO_APP     | 0x21 | Jump to user application code located in the internal flash memory or in the SRAM |
-| BL_WRITE_MEM       | 0x31 | Write up to 256 bytes to the RAM or flash memory starting from an address specified by the application |
-| BL_ERASE_MEM       | 0x43 | Erase from one to all the flash memory pages |
-| BL_ERASE_MEM_EXT   | 0x44 | Erase from one to all the flash memory pages using two-byte addressing mode |
-| BL_SPECIAL         | 0x50 | Generic command that allows to add new features depending on the product constraints, without adding a new command for every feature |
-| BL_SPECIAL_EXT     | 0x51 | Generic command that allows the user to send more data compared to the Special command |
-| BL_WRITE_PROTECT   | 0x63 | Enable the write protection for some sectors |
-| BL_WRITE_UNPROTECT | 0x73 | Disable the write protection for all flash memory sectors |
-| BL_READ_PROTECT    | 0x82 | Enable the read protection |
-| BL_READ_UNPROTECT  | 0x92 | Disable the read protection |
-| BL_GET_CHECKSUM    | 0xA1 | Compute a CRC value on a given memory area with a size multiple of 4 bytes |
+| command              | code | description |
+| -------------------- | ---- | ----------- |
+| BL_GET_CMD           | 0x00 | Get the version and the allowed commands supported by the current version of the protocol |
+| BL_GET_VERSION       | 0x01 | Get the protocol version |
+| BL_GET_ID            | 0x02 | Get the chip ID |
+| BL_GET_PROTECT_LEVEL | 0x03 | Get the protection level status |
+| BL_READ_MEM          | 0x11 | Read up to 256 bytes of memory starting from an address specified by the application |
+| BL_JUMP_TO_APP       | 0x21 | Jump to user application code located in the internal flash memory or in the SRAM |
+| BL_WRITE_MEM         | 0x31 | Write up to 256 bytes to the RAM or flash memory starting from an address specified by the application |
+| BL_ERASE_MEM         | 0x43 | Erase from one to all the flash memory pages |
+| BL_ERASE_MEM_EXT     | 0x44 | Erase from one to all the flash memory pages using two-byte addressing mode |
+| BL_SPECIAL           | 0x50 | Generic command that allows to add new features depending on the product constraints, without adding a new command for every feature |
+| BL_SPECIAL_EXT       | 0x51 | Generic command that allows the user to send more data compared to the Special command |
+| BL_WRITE_PROTECT     | 0x63 | Enable the write protection for some sectors |
+| BL_WRITE_UNPROTECT   | 0x73 | Disable the write protection for all flash memory sectors |
+| BL_READ_PROTECT      | 0x82 | Enable the read protection |
+| BL_READ_UNPROTECT    | 0x92 | Disable the read protection |
+| BL_GET_CHECKSUM      | 0xA1 | Compute a CRC value on a given memory area with a size multiple of 4 bytes |
 
 However, there are still some commands that have not been implemented yet.
 - Done
   - BL_GET_CMD
   - BL_GET_VERSION
   - BL_GET_ID
+  - BL_PROTECT_LEVEL
   - BL_JUMP_TO_APP
 
 - Not done
