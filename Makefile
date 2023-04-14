@@ -1,31 +1,40 @@
 # Generic Makefile
+-include toolchain.mk
+
 BL-BIN ?= boot-main
 APP-BIN ?= app-main
 
 OUT ?= $(CURDIR)/build
-BIN ?= main
 # serial port
 PORT ?= /dev/ttyACM0
 
-$(OUT)/$(BIN): $(OUT)/$(BL-BIN) $(OUT)/$(APP-BIN)
-	cat $^ > $@
+BL-TARGET = $(OUT)/$(BL-BIN)
+APP-TARGET = $(OUT)/$(APP-BIN)
 
-$(OUT)/$(BL-BIN):
+all: $(BL-TARGET) $(APP-TARGET)
+
+$(BL-TARGET):
 	$(MAKE) -C bl OUT=$(OUT) BIN=$(BL-BIN)
 
-$(OUT)/$(APP-BIN):
+$(APP-TARGET):
 	$(MAKE) -C app OUT=$(OUT) BIN=$(APP-BIN)
 
 host:
 	python3 host/host.py -p $(PORT)
 
+disassembly: $(BL-TARGET) $(APP-TARGET)
+	$(TOOLCHAIN)objdump -d $^ > $(BL-TARGET).S
+	$(TOOLCHAIN)objdump -d $(APP-TARGET) > $(APP-TARGET).S
+
 debug:
 	openocd -f board/st_nucleo_f3.cfg
 
 upload:
-	openocd -f interface/stlink.cfg -f target/stm32f3x.cfg -c " program $(OUT)/$(BIN) verify exit "
+        # burn the application first
+	openocd -f interface/stlink.cfg -f target/stm32f3x.cfg -c " program $(APP-TARGET) verify exit "
+	openocd -f interface/stlink.cfg -f target/stm32f3x.cfg -c " program $(BL-TARGET) verify exit reset "
 
 clean:
 	-@$(RM) -r $(OUT)
 
-.PHONY: $(OUT)/$(BIN) $(OUT)/$(BL-BIN) $(OUT)/$(APP-BIN) host debug upload clean
+.PHONY: all $(BL-TARGET) $(APP-TARGET) host disassembly debug upload clean

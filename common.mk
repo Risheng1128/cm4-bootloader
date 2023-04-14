@@ -1,22 +1,19 @@
-# toolchain
-TOOLCHAIN = arm-none-eabi-
-CC = $(TOOLCHAIN)gcc
-SZ = $(TOOLCHAIN)size
+-include toolchain.mk
 
 # toolchain options
 CFLAGS = -mcpu=cortex-m4 \
-    -mthumb \
-	$(C_INC) \
-	-O0 \
-	-Wall \
-	-g
+         -mthumb \
+         $(C_INC) \
+         -O0 \
+         -Wall \
+         -g
 
-LDFLAGS = $(MCU) \
-    -specs=nano.specs \
-	-T$(LDSCRIPT) \
-	-lc \
-	-lm \
-	-lnosys
+LDFLAGS = -mcpu=cortex-m4 \
+          -specs=nano.specs \
+          -T$(LDSCRIPT) \
+          -lc \
+          -lm \
+          -lnosys
 
 # object file
 OBJS  = $(patsubst %.c, $(OUT)/%.o, $(notdir $(C_SRC)))
@@ -37,8 +34,3 @@ $(OUT)/$(BIN): $(OUT) $(OBJS)
 
 $(OUT):
 	mkdir $@
-
-disassembly: $(OUT)/$(BIN)
-	$(TOOLCHAIN)objdump -d $^ > $(OUT)/$(BIN).S
-
-.PHONY: disassembly
