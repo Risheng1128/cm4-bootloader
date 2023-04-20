@@ -113,6 +113,16 @@ The following picture shows the command package format.
 +--------------+-------------+--------+----------+
 ```
 
+#### Erase memory command format
+The following picture shows the command format of memory erasing.
+1. Buffer is composed of a combination of "page number" and "number of page".
+2. Both of "page number" and "number of page" are 1 byte. That is, buffer size is 2.
+```
++--------------+-------------+-------------+----------------+----------+
+| command code | buffer size | page number | number of page | CRC data |
++--------------+-------------+-------------+----------------+----------+
+```
+
 ## Bootloader commands
 The following shows all commands provided by `cm4-bootloader`. It refers to [USART protocol used in the STM32 bootloader](https://www.st.com/resource/en/application_note/an3155-usart-protocol-used-in-the-stm32-bootloader-stmicroelectronics.pdf).
 
@@ -142,11 +152,11 @@ However, there are still some commands that have not been implemented yet.
   - BL_GET_ID
   - BL_GET_PROTECT_LEVEL
   - BL_JUMP_TO_APP
+  - BL_ERASE_MEM
 
 - Not done
   - BL_READ_MEM
   - BL_WRITE_MEM
-  - BL_ERASE_MEM
   - BL_ERASE_MEM_EXT
   - BL_SPECIAL
   - BL_SPECIAL_EXT

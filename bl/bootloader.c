@@ -38,6 +38,7 @@
 #define BL_GET_ID_LEN 4
 #define BL_GET_PROTECT_LEVEL_LEN 1
 #define BL_JUMP_TO_APP_LEN 0
+#define BL_ERASE_MEM_LEN 1
 
 struct bl_command {
     uint8_t code;   /* command code */
@@ -232,7 +233,37 @@ static void bl_write_mem(struct bl_command *command) {}
 /* handle BL_ERASE_MEM
  * Erase from one to all the flash memory pages
  */
-static void bl_erase_mem(struct bl_command *command) {}
+static void bl_erase_mem(struct bl_command *command)
+{
+    uint32_t crc = *(uint32_t *) command->crc;
+
+    /* CRC verify failed */
+    if (!bl_crc_verify(command, 2 + command->length, crc)) {
+        /* send nack to host */
+        bl_send_nack();
+        return;
+    }
+
+    /* send ack */
+    bl_send_ack(BL_ERASE_MEM_LEN);
+
+    // /* page number */
+    uint8_t page = command->buffer[0];
+    /* the number of page to erase */
+    uint8_t page_num = command->buffer[1];
+
+    /* check lock bit */
+    if (FLASH_CR & 0x00000080) {
+        flash_unlock_sequence();
+    }
+
+    uint8_t res = (page == 0xFF) ? flash_mass_erase()
+                                 : flash_erase(page, page_num);
+    /* enable lock */
+    SET_LOCK();
+
+    bl_send_data(&res, BL_ERASE_MEM_LEN);
+}
 
 /* handle BL_ERASE_MEM_EXT
  * Erase from one to all the flash memory pages using two-byte addressing mode

@@ -4,6 +4,7 @@ BIN ?= boot-main
 # c source file
 C_SRC = usart.c \
 	bootloader.c \
+	flash.c \
 	crc.c \
 	boot-main.c
 

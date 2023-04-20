@@ -171,7 +171,47 @@ def do_write_mem(port):
 Erase from one to all the flash memory pages
 '''
 def do_erase_mem(port):
-    pass
+    page = int(input(' Type the page number (0 ~ 255): '))
+    page_num = int(input(' Type the number of page (0 ~ 255): '))
+    # check the page number and the number of page
+    if (page & 0xffffff00) or (page_num & 0xffffff00):
+        print(' Incorrect page number or page length')
+        return
+    if page + page_num > 255:
+        print(' Exceed page number limit')
+        return
+
+    buffer = bytearray()
+    # add command code
+    buffer.append(const.BL_ERASE_MEM)
+    # add command buffer length
+    buffer.append(const.BL_ERASE_MEM_LEN)
+    # add buffer data
+    buffer.append(page)
+    buffer.append(page_num)
+    crc = utility.compute_crc(buffer)
+    for i in crc.to_bytes(4, 'little'):
+        buffer.append(i)
+
+    # send command
+    utility.serial_port_write(port, buffer)
+
+    # read ACK/NACK
+    ack_or_nack = utility.serial_port_read(port, 1)
+    ack_or_nack = int.from_bytes(ack_or_nack, 'little')
+    if ack_or_nack == const.NACK:
+        print(' Read NACK')
+        return
+
+    print(' Erase memory ...')
+    reply_len = utility.serial_port_read(port, 1)
+    reply_len = int.from_bytes(reply_len, 'little')
+    reply = utility.serial_port_read(port, reply_len)
+    reply = int.from_bytes(reply, 'little')
+    if reply:
+        print(' Erase memory success')
+    else:
+        print(' Erase memory failed')
 
 '''
 Erase from one to all the flash memory pages using two-byte addressing mode
