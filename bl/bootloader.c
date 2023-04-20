@@ -209,6 +209,10 @@ static void bl_jump_to_app(struct bl_command *command)
     /* send ack */
     bl_send_ack(BL_JUMP_TO_APP_LEN);
 
+    /* reset the peripherals that bootloader uses */
+    usart_reset();
+    crc_reset();
+
     /* set MSP */
     uint32_t msp = *(volatile uint32_t *) FLASH_PAGE_8_BASE;
     __asm volatile("MSR MSP, %0" ::"r"(msp));

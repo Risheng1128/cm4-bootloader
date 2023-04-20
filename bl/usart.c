@@ -28,6 +28,8 @@
 
 /* AHB peripheral clock enable register */
 #define RCC_AHBENR *(volatile uint32_t *) 0x40021014U
+/* APB1 peripheral reset register */
+#define RCC_APB1RSTR *(volatile uint32_t *) 0x40021010U
 /* APB1 peripheral clock enable register */
 #define RCC_APB1ENR *(volatile uint32_t *) 0x4002101CU
 
@@ -48,6 +50,7 @@
 /* Transmit data register */
 #define USART3_TDR *(volatile uint32_t *) 0x40004828U
 
+/* USART initialization */
 void usart_init(void)
 {
     /***************** GPIO set *****************/
@@ -69,6 +72,13 @@ void usart_init(void)
     USART3_CR1 |= (1 << 2) | (1 << 3);
     /* Baudrate setup */
     USART3_BRR = DEFAULT_FCLK / BAUDRATE_38400;
+}
+
+/* USART reset */
+void usart_reset(void)
+{
+    RCC_APB1RSTR |= 1 << 18;
+    RCC_APB1RSTR &= ~(1 << 18);
 }
 
 /* send n-bytes data */
