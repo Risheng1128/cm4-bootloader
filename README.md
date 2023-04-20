@@ -140,7 +140,7 @@ However, there are still some commands that have not been implemented yet.
   - BL_GET_CMD
   - BL_GET_VERSION
   - BL_GET_ID
-  - BL_PROTECT_LEVEL
+  - BL_GET_PROTECT_LEVEL
   - BL_JUMP_TO_APP
 
 - Not done
