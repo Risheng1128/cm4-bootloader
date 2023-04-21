@@ -4,6 +4,7 @@
  */
 
 #include <stdbool.h>
+#include "common.h"
 #include "crc.h"
 #include "flash.h"
 #include "usart.h"
@@ -14,32 +15,42 @@
 #define BL_CRC_SIZE 4
 #define BL_BUFFER_SIZE 256
 
-/* bootloader commands definition */
-#define BL_GET_CMD 0x00
-#define BL_GET_VERSION 0x01
-#define BL_GET_ID 0x02
-#define BL_GET_PROTECT_LEVEL 0x03
-#define BL_READ_MEM 0x11
-#define BL_JUMP_TO_APP 0x21
-#define BL_WRITE_MEM 0x31
-#define BL_ERASE_MEM 0x43
-#define BL_ERASE_MEM_EXT 0x44
-#define BL_SPECIAL 0x50
-#define BL_SPECIAL_EXT 0x51
-#define BL_WRITE_PROTECT 0x63
-#define BL_WRITE_UNPROTECT 0x73
-#define BL_READ_PROTECT 0x82
-#define BL_READ_UNPROTECT 0x92
-#define BL_GET_CHECKSUM 0xA1
+/* bootloader commands list
+ * (command, code, reply length)
+ */
+#define BL_CMD_LIST               \
+    _(get_cmd, 0x00, 7)           \
+    _(get_version, 0x01, 3)       \
+    _(get_id, 0x02, 4)            \
+    _(get_protect_level, 0x03, 1) \
+    _(jump_to_app, 0x21, 0)       \
+    _(write_mem, 0x31, 1)         \
+    _(erase_mem, 0x43, 1)
+
+/* unimplement command list */
+#define BL_UNIMP_CMD_LIST    \
+    _(read_mem, 0x11)        \
+    _(erase_mem_ext, 0x44)   \
+    _(special, 0x50)         \
+    _(special_ext, 0x51)     \
+    _(write_protect, 0x63)   \
+    _(write_unprotect, 0x73) \
+    _(read_protect, 0x82)    \
+    _(read_unprotect, 0x92)  \
+    _(get_checksum, 0xA1)
+
+enum bl_cmd_code_list {
+#define _(cmd, code, len) bl_##cmd##_cmd = code,
+    BL_CMD_LIST
+#undef _
+};
 
 /* bootloader commands reply length */
-#define BL_GET_CMD_LEN 15
-#define BL_GET_VERSION_LEN 3
-#define BL_GET_ID_LEN 4
-#define BL_GET_PROTECT_LEVEL_LEN 1
-#define BL_JUMP_TO_APP_LEN 0
-#define BL_WRITE_MEM_LEN 1
-#define BL_ERASE_MEM_LEN 1
+enum bl_cmd_reply_list {
+#define _(cmd, code, len) bl_##cmd##_len = len,
+    BL_CMD_LIST
+#undef _
+};
 
 struct bl_command {
     uint8_t code;   /* command code */
@@ -95,121 +106,57 @@ static bool bl_crc_verify(struct bl_command *command,
  * Get the version and the allowed commands supported by the current
  * version of the protocol
  */
-static void bl_get_cmd(struct bl_command *command)
+static void do_get_cmd(struct bl_command *command UNUSED)
 {
-    uint32_t crc = *(uint32_t *) command->crc;
-
-    /* CRC verify failed */
-    if (!bl_crc_verify(command, 2, crc)) {
-        /* send nack to host */
-        bl_send_nack();
-        return;
-    }
-
-    /* send ack */
-    bl_send_ack(BL_GET_CMD_LEN);
-
     /* get all command code */
     uint8_t all_comand[] = {
-        BL_GET_CMD,      BL_GET_VERSION,    BL_GET_ID,
-        BL_READ_MEM,     BL_JUMP_TO_APP,    BL_WRITE_MEM,
-        BL_ERASE_MEM,    BL_ERASE_MEM_EXT,  BL_SPECIAL,
-        BL_SPECIAL_EXT,  BL_WRITE_PROTECT,  BL_WRITE_UNPROTECT,
-        BL_READ_PROTECT, BL_READ_UNPROTECT, BL_GET_CHECKSUM};
-    bl_send_data((uint8_t *) all_comand, BL_GET_CMD_LEN);
+#define _(cmd, code, len) bl_##cmd##_cmd,
+        BL_CMD_LIST
+#undef _
+    };
+    bl_send_data((uint8_t *) all_comand, bl_get_cmd_len);
 }
 
 /* handle BL_GET_VERSION
  * Get the protocol version
  */
-static void bl_get_version(struct bl_command *command)
+static void do_get_version(struct bl_command *command UNUSED)
 {
-    uint32_t crc = *(uint32_t *) command->crc;
-
-    /* CRC verify failed */
-    if (!bl_crc_verify(command, 2, crc)) {
-        /* send nack to host */
-        bl_send_nack();
-        return;
-    }
-
-    /* send ack */
-    bl_send_ack(BL_GET_VERSION_LEN);
-
     /* get bootloader version */
     char *version = BL_VERSION;
-    bl_send_data((uint8_t *) version, BL_GET_VERSION_LEN);
+    bl_send_data((uint8_t *) version, bl_get_version_len);
 }
-
-/* MCU device ID code */
-#define DBGMCU *(volatile uint32_t *) 0xE0042000U
 
 /* handle BL_GET_ID
  * Get the chip ID
  */
-static void bl_get_id(struct bl_command *command)
+static void do_get_id(struct bl_command *command UNUSED)
 {
-    uint32_t crc = *(uint32_t *) command->crc;
-
-    /* CRC verify failed */
-    if (!bl_crc_verify(command, 2, crc)) {
-        /* send nack to host */
-        bl_send_nack();
-        return;
-    }
-
-    /* send ack */
-    bl_send_ack(BL_GET_ID_LEN);
-
     /* send rev_id */
-    bl_send_data((uint8_t *) &DBGMCU, BL_GET_ID_LEN);
+    bl_send_data((uint8_t *) &DBGMCU, bl_get_id_len);
 }
 
 /* handle BL_GET_PROTECT_LEVEL
  * Get the protection level status
  */
-static void bl_get_protect_level(struct bl_command *command)
+static void do_get_protect_level(struct bl_command *command UNUSED)
 {
-    uint32_t crc = *(uint32_t *) command->crc;
-
-    /* CRC verify failed */
-    if (!bl_crc_verify(command, 2, crc)) {
-        /* send nack to host */
-        bl_send_nack();
-        return;
-    }
-
-    /* send ack */
-    bl_send_ack(BL_GET_PROTECT_LEVEL_LEN);
-
     uint8_t protect_level = (FLASH_OBR & 0x00000006) >> 1;
-    bl_send_data(&protect_level, BL_GET_PROTECT_LEVEL_LEN);
+    bl_send_data(&protect_level, bl_get_protect_level_len);
 }
 
 /* handle BL_READ_MEM
  * Read up to 256 bytes of memory starting from an address specified
  * by the application
  */
-static void bl_read_mem(struct bl_command *command) {}
+static void do_read_mem(struct bl_command *command UNUSED) {}
 
 /* handle BL_JUMP_TO_APP
  * Jump to user application code located in the internal flash memory or
  * in the SRAM
  */
-static void bl_jump_to_app(struct bl_command *command)
+static void do_jump_to_app(struct bl_command *command UNUSED)
 {
-    uint32_t crc = *(uint32_t *) command->crc;
-
-    /* CRC verify failed */
-    if (!bl_crc_verify(command, 2, crc)) {
-        /* send nack to host */
-        bl_send_nack();
-        return;
-    }
-
-    /* send ack */
-    bl_send_ack(BL_JUMP_TO_APP_LEN);
-
     /* reset the peripherals that bootloader uses */
     usart_reset();
     crc_reset();
@@ -218,12 +165,11 @@ static void bl_jump_to_app(struct bl_command *command)
     uint32_t msp = *(volatile uint32_t *) FLASH_PAGE_8_BASE;
     __asm volatile("MSR MSP, %0" ::"r"(msp));
 
-    /* get application reset handler address */
-    uint32_t app_reset_addr = *(uint32_t *) (FLASH_PAGE_8_BASE + 4);
-
     /* set vector table offset */
     VTOR = FLASH_BASE | VECT_TAB_OFF;
 
+    /* get application reset handler address */
+    uint32_t app_reset_addr = *(uint32_t *) (FLASH_PAGE_8_BASE + 4);
     /* jump to application */
     void (*app_reset_handler)(void) = (void *) app_reset_addr;
     app_reset_handler();
@@ -233,20 +179,8 @@ static void bl_jump_to_app(struct bl_command *command)
  * Write up to 256 bytes to the RAM or flash memory starting from an
  * address specified by the application
  */
-static void bl_write_mem(struct bl_command *command)
+static void do_write_mem(struct bl_command *command UNUSED)
 {
-    uint32_t crc = *(uint32_t *) command->crc;
-
-    /* CRC verify failed */
-    if (!bl_crc_verify(command, 2 + command->length, crc)) {
-        /* send nack to host */
-        bl_send_nack();
-        return;
-    }
-
-    /* send ack */
-    bl_send_ack(BL_WRITE_MEM_LEN);
-
     /* decode buffer */
     uint32_t base_addr = *(uint32_t *) command->buffer;
     uint8_t bin_len = command->buffer[4];
@@ -261,27 +195,15 @@ static void bl_write_mem(struct bl_command *command)
     /* enable lock */
     SET_LOCK();
 
-    bl_send_data(&res, BL_WRITE_MEM_LEN);
+    bl_send_data(&res, bl_write_mem_len);
 }
 
 /* handle BL_ERASE_MEM
  * Erase from one to all the flash memory pages
  */
-static void bl_erase_mem(struct bl_command *command)
+static void do_erase_mem(struct bl_command *command UNUSED)
 {
-    uint32_t crc = *(uint32_t *) command->crc;
-
-    /* CRC verify failed */
-    if (!bl_crc_verify(command, 2 + command->length, crc)) {
-        /* send nack to host */
-        bl_send_nack();
-        return;
-    }
-
-    /* send ack */
-    bl_send_ack(BL_ERASE_MEM_LEN);
-
-    // /* page number */
+    /* page number */
     uint8_t page = command->buffer[0];
     /* the number of page to erase */
     uint8_t page_num = command->buffer[1];
@@ -296,50 +218,71 @@ static void bl_erase_mem(struct bl_command *command)
     /* enable lock */
     SET_LOCK();
 
-    bl_send_data(&res, BL_ERASE_MEM_LEN);
+    bl_send_data(&res, bl_erase_mem_len);
 }
 
 /* handle BL_ERASE_MEM_EXT
  * Erase from one to all the flash memory pages using two-byte addressing mode
  */
-static void bl_erase_mem_ext(struct bl_command *command) {}
+static void do_erase_mem_ext(struct bl_command *command UNUSED) {}
 
 /* handle BL_SPECIAL
  * Generic command that allows to add new features depending on the product
  * constraints, without adding a new command for every feature
  */
-static void bl_special(struct bl_command *command) {}
+static void do_special(struct bl_command *command UNUSED) {}
 
 /* handle BL_SPECIAL_EXT
  * Generic command that allows the user to send more data compared to
  * the special command
  */
-static void bl_special_ext(struct bl_command *command) {}
+static void do_special_ext(struct bl_command *command UNUSED) {}
 
 /* handle BL_WRITE_PROTECT
  * Enable the write protection for some sectors
  */
-static void bl_write_protect(struct bl_command *command) {}
+static void do_write_protect(struct bl_command *command UNUSED) {}
 
 /* handle BL_WRITE_UNPROTECT
  * Disable the write protection for all flash memory sectors
  */
-static void bl_write_unprotect(struct bl_command *command) {}
+static void do_write_unprotect(struct bl_command *command UNUSED) {}
 
 /* handle BL_READ_PROTECT
  * Enable the read protection
  */
-static void bl_read_protect(struct bl_command *command) {}
+static void do_read_protect(struct bl_command *command UNUSED) {}
 
 /* handle BL_READ_UNPROTECT
  * Disable the read protection
  */
-static void bl_read_unprotect(struct bl_command *command) {}
+static void do_read_unprotect(struct bl_command *command UNUSED) {}
 
 /* handle BL_GET_CHECKSUM
  * Compute a CRC value on a given memory area with a size multiple of 4 bytes
  */
-static void bl_get_checksum(struct bl_command *command) {}
+static void do_get_checksum(struct bl_command *command UNUSED) {}
+
+#define CMD_HANDLER(cmd, len)                                    \
+    static void bl_##cmd(struct bl_command *command)             \
+    {                                                            \
+        uint32_t crc = *(uint32_t *) command->crc;               \
+        /* CRC verify failed */                                  \
+        if (!bl_crc_verify(command, 2 + command->length, crc)) { \
+            /* send nack to host */                              \
+            bl_send_nack();                                      \
+            return;                                              \
+        }                                                        \
+        /* send ack */                                           \
+        bl_send_ack(len);                                        \
+        /* execute command */                                    \
+        do_##cmd(command);                                       \
+    }
+
+/* command handler */
+#define _(cmd, code, len) CMD_HANDLER(cmd, len)
+BL_CMD_LIST
+#undef _
 
 /* read command from USART */
 void bl_read_command(void)
@@ -361,54 +304,13 @@ void bl_read_command(void)
 
     /* handle bootloader commands */
     switch (command.code) {
-    case BL_GET_CMD:
-        bl_get_cmd(&command);
+#define _(cmd, code, len)   \
+    case bl_##cmd##_cmd:    \
+        bl_##cmd(&command); \
         break;
-    case BL_GET_VERSION:
-        bl_get_version(&command);
-        break;
-    case BL_GET_ID:
-        bl_get_id(&command);
-        break;
-    case BL_GET_PROTECT_LEVEL:
-        bl_get_protect_level(&command);
-        break;
-    case BL_READ_MEM:
-        bl_read_mem(&command);
-        break;
-    case BL_JUMP_TO_APP:
-        bl_jump_to_app(&command);
-        break;
-    case BL_WRITE_MEM:
-        bl_write_mem(&command);
-        break;
-    case BL_ERASE_MEM:
-        bl_erase_mem(&command);
-        break;
-    case BL_ERASE_MEM_EXT:
-        bl_erase_mem_ext(&command);
-        break;
-    case BL_SPECIAL:
-        bl_special(&command);
-        break;
-    case BL_SPECIAL_EXT:
-        bl_special_ext(&command);
-        break;
-    case BL_WRITE_PROTECT:
-        bl_write_protect(&command);
-        break;
-    case BL_WRITE_UNPROTECT:
-        bl_write_unprotect(&command);
-        break;
-    case BL_READ_PROTECT:
-        bl_read_protect(&command);
-        break;
-    case BL_READ_UNPROTECT:
-        bl_read_unprotect(&command);
-        break;
-    case BL_GET_CHECKSUM:
-        bl_get_checksum(&command);
-        break;
+
+        BL_CMD_LIST
+#undef _
     default:
         break;
     }
