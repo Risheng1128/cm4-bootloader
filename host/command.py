@@ -2,61 +2,69 @@ import os
 import utility
 import consts as const
 
+class command_package:
+    def __init__(self, code, buffer_len):
+        self.cmd = bytearray()
+        # add command code
+        self.append(code)
+        # add command buffer length
+        self.append(buffer_len)
+
+    def append(self, data):
+        self.cmd.append(data)
+
+    # append 4 bytes data
+    def append_int(self, data):
+        for i in data.to_bytes(4, 'little'):
+            self.cmd.append(i)
+
+    def append_bytes_array(self, array):
+        for i in array:
+            self.cmd.append(i)
+
+    # append CRC value
+    def append_crc(self):
+        crc = utility.compute_crc(self.cmd)
+        self.append_int(crc)
+
+    # send command
+    def send_command(self, port):
+        utility.serial_port_write(port, self.cmd)
+
 '''
 Get the version and the allowed commands supported by the current
 version of the protocol
 '''
 def do_get_cmd(port):
-    buffer = bytearray()
-    # add command code
-    buffer.append(const.BL_GET_CMD)
-    # add command buffer length
-    buffer.append(const.BL_GET_CMD_LEN)
-    crc = utility.compute_crc(buffer)
-    for i in crc.to_bytes(4, 'little'):
-        buffer.append(i)
-
-    # send command
-    utility.serial_port_write(port, buffer)
+    buffer = command_package(const.BL_GET_CMD,
+                             const.BL_GET_CMD_LEN)
+    buffer.append_crc()
+    buffer.send_command(port)
 
     # read ACK/NACK
-    ack_or_nack = utility.serial_port_read(port, 1)
-    ack_or_nack = int.from_bytes(ack_or_nack, 'little')
-    if ack_or_nack == const.NACK:
+    if utility.serial_read_to_int(port, 1) == const.NACK:
         print(' Read NACK')
         return
 
-    reply_len = utility.serial_port_read(port, 1)
-    reply_len = int.from_bytes(reply_len, 'little')
+    reply_len = utility.serial_read_to_int(port, 1)
     reply = utility.serial_port_read(port, reply_len)
-    reply = [hex(x) for x in reply]
-    print(' Support Command Code: ', reply)
+    print(' Support Command Code: ', [hex(x) for x in reply])
 
 '''
 Get the protocol version
 '''
 def do_get_version(port):
-    buffer = bytearray()
-    # add command code
-    buffer.append(const.BL_GET_VERSION)
-    # add command buffer length
-    buffer.append(const.BL_GET_VERSION_LEN)
-    crc = utility.compute_crc(buffer)
-    for i in crc.to_bytes(4, 'little'):
-        buffer.append(i)
-
-    # send command
-    utility.serial_port_write(port, buffer)
+    buffer = command_package(const.BL_GET_VERSION,
+                             const.BL_GET_VERSION_LEN)
+    buffer.append_crc()
+    buffer.send_command(port)
 
     # read ACK/NACK
-    ack_or_nack = utility.serial_port_read(port, 1)
-    ack_or_nack = int.from_bytes(ack_or_nack, 'little')
-    if ack_or_nack == const.NACK:
+    if utility.serial_read_to_int(port, 1) == const.NACK:
         print(' Read NACK')
         return
 
-    reply_len = utility.serial_port_read(port, 1)
-    reply_len = int.from_bytes(reply_len, 'little')
+    reply_len = utility.serial_read_to_int(port, 1)
     reply = utility.serial_port_read(port, reply_len)
     print(' Bootloader Version: ', reply.decode('ascii'))
 
@@ -64,66 +72,44 @@ def do_get_version(port):
 Get the chip ID
 '''
 def do_get_id(port):
-    buffer = bytearray()
-    # add command code
-    buffer.append(const.BL_GET_ID)
-    # add command buffer length
-    buffer.append(const.BL_GET_ID_LEN)
-    crc = utility.compute_crc(buffer)
-    for i in crc.to_bytes(4, 'little'):
-        buffer.append(i)
-
-    # send command
-    utility.serial_port_write(port, buffer)
+    buffer = command_package(const.BL_GET_ID,
+                             const.BL_GET_ID_LEN)
+    buffer.append_crc()
+    buffer.send_command(port)
+    print(' Read chip id ...')
 
     # read ACK/NACK
-    ack_or_nack = utility.serial_port_read(port, 1)
-    ack_or_nack = int.from_bytes(ack_or_nack, 'little')
-    if ack_or_nack == const.NACK:
+    if utility.serial_read_to_int(port, 1) == const.NACK:
         print(' Read NACK')
         return
 
-    print(' Read chip id ...')
-    reply_len = utility.serial_port_read(port, 1)
-    reply_len = int.from_bytes(reply_len, 'little')
-    reply = utility.serial_port_read(port, reply_len)
-    id = int.from_bytes(reply, 'little')
-    print(' REV ID: ', hex((id & 0xffff0000) >> 16))
-    print(' DEV ID: ', hex(id & 0x00000fff))
+    reply_len = utility.serial_read_to_int(port, 1)
+    reply = utility.serial_read_to_int(port, reply_len)
+    print(' REV ID: ', hex((reply & 0xffff0000) >> 16))
+    print(' DEV ID: ', hex(reply & 0x00000fff))
 
 '''
 Get the protection level status
 '''
 def do_get_protect_level(port):
-    buffer = bytearray()
-    # add command code
-    buffer.append(const.BL_GET_PROTECT_LEVEL)
-    # add command buffer length
-    buffer.append(const.BL_GET_PROTECT_LEVEL_LEN)
-    crc = utility.compute_crc(buffer)
-    for i in crc.to_bytes(4, 'little'):
-        buffer.append(i)
-
-    # send command
-    utility.serial_port_write(port, buffer)
+    buffer = command_package(const.BL_GET_PROTECT_LEVEL,
+                             const.BL_GET_PROTECT_LEVEL_LEN)
+    buffer.append_crc()
+    buffer.send_command(port)
+    print(' Read protection level status ...')
 
     # read ACK/NACK
-    ack_or_nack = utility.serial_port_read(port, 1)
-    ack_or_nack = int.from_bytes(ack_or_nack, 'little')
-    if ack_or_nack == const.NACK:
+    if utility.serial_read_to_int(port, 1) == const.NACK:
         print(' Read NACK')
         return
 
-    print(' Read protection level status ...')
-    reply_len = utility.serial_port_read(port, 1)
-    reply_len = int.from_bytes(reply_len, 'little')
-    reply = utility.serial_port_read(port, reply_len)
-    id = int.from_bytes(reply, 'little')
-    if id == 0:
+    reply_len = utility.serial_read_to_int(port, 1)
+    reply = utility.serial_read_to_int(port, reply_len)
+    if reply == 0:
         print(' Protection Level 0 is enabled')
-    elif id == 1:
+    elif reply == 1:
         print(' Protection Level 1 is enabled')
-    elif id == 3:
+    elif reply == 3:
         print(' Protection Level 2 is enabled')
 
 '''
@@ -138,26 +124,17 @@ Jump to user application code located in the internal flash memory or
 in the SRAM
 '''
 def do_jump_to_app(port):
-    buffer = bytearray()
-    # add command code
-    buffer.append(const.BL_JUMP_TO_APP)
-    # add command buffer length
-    buffer.append(const.BL_JUMP_TO_APP_LEN)
-    crc = utility.compute_crc(buffer)
-    for i in crc.to_bytes(4, 'little'):
-        buffer.append(i)
-
-    # send command
-    utility.serial_port_write(port, buffer)
+    buffer = command_package(const.BL_JUMP_TO_APP,
+                             const.BL_JUMP_TO_APP_LEN)
+    buffer.append_crc()
+    buffer.send_command(port)
 
     # read ACK/NACK
-    ack_or_nack = utility.serial_port_read(port, 1)
-    ack_or_nack = int.from_bytes(ack_or_nack, 'little')
-    if ack_or_nack == const.NACK:
+    if utility.serial_read_to_int(port, 1) == const.NACK:
         print(' Read NACK')
         return
 
-    print(' Jump to application...')
+    print(' Jump to application ...')
     raise SystemExit
 
 '''
@@ -165,39 +142,24 @@ Write up to 256 bytes to the RAM or flash memory starting from an
 address specified by the application
 '''
 def send_write_mem_cmd(port, buf_len, addr, bin_len, bin_data):
-    buffer = bytearray()
-    # add command code
-    buffer.append(const.BL_WRITE_MEM)
-    # add command buffer length
-    buffer.append(buf_len)
+    buffer = command_package(const.BL_WRITE_MEM,
+                             buf_len)
     # add base address
-    for i in addr.to_bytes(4, 'little'):
-        buffer.append(i)
+    buffer.append_int(addr)
     # add bin_len
     buffer.append(bin_len)
     # add binary data
-    for i in bin_data:
-        buffer.append(i)
-    crc = utility.compute_crc(buffer)
-    for i in crc.to_bytes(4, 'little'):
-        buffer.append(i)
-
-    # send command
-    utility.serial_port_write(port, buffer)
+    buffer.append_bytes_array(bin_data)
+    buffer.append_crc()
+    buffer.send_command(port)
 
     # read ACK/NACK
-    ack_or_nack = utility.serial_port_read(port, 1)
-    ack_or_nack = int.from_bytes(ack_or_nack, 'little')
-    # check ACK/NACK
-    if ack_or_nack == const.NACK:
+    if utility.serial_read_to_int(port, 1) == const.NACK:
         print(' Read NACK')
         return
 
-    reply_len = utility.serial_port_read(port, 1)
-    reply_len = int.from_bytes(reply_len, 'little')
-    reply = utility.serial_port_read(port, reply_len)
-    reply = int.from_bytes(reply, 'little')
-    if reply:
+    reply_len = utility.serial_read_to_int(port, 1)
+    if utility.serial_read_to_int(port, reply_len):
         print(' Write memory success')
     else:
         print(' Write memory failed')
@@ -231,7 +193,7 @@ def do_write_mem(port):
         addr += const.MAX_BIN_LEN
         index += const.MAX_BIN_LEN
 
-    print(' final round: ')
+    print(' final round : ')
     send_write_mem_cmd(port, remain + 5, addr, remain,
                        bin_data[index : index + remain])
 
@@ -249,34 +211,22 @@ def do_erase_mem(port):
         print(' Exceed page number limit')
         return
 
-    buffer = bytearray()
-    # add command code
-    buffer.append(const.BL_ERASE_MEM)
-    # add command buffer length
-    buffer.append(const.BL_ERASE_MEM_LEN)
+    buffer = command_package(const.BL_ERASE_MEM,
+                             const.BL_ERASE_MEM_LEN)
     # add buffer data
     buffer.append(page)
     buffer.append(page_num)
-    crc = utility.compute_crc(buffer)
-    for i in crc.to_bytes(4, 'little'):
-        buffer.append(i)
-
-    # send command
-    utility.serial_port_write(port, buffer)
+    buffer.append_crc()
+    buffer.send_command(port)
+    print(' Erase memory ...')
 
     # read ACK/NACK
-    ack_or_nack = utility.serial_port_read(port, 1)
-    ack_or_nack = int.from_bytes(ack_or_nack, 'little')
-    if ack_or_nack == const.NACK:
+    if utility.serial_read_to_int(port, 1) == const.NACK:
         print(' Read NACK')
         return
 
-    print(' Erase memory ...')
-    reply_len = utility.serial_port_read(port, 1)
-    reply_len = int.from_bytes(reply_len, 'little')
-    reply = utility.serial_port_read(port, reply_len)
-    reply = int.from_bytes(reply, 'little')
-    if reply:
+    reply_len = utility.serial_read_to_int(port, 1)
+    if utility.serial_read_to_int(port, reply_len):
         print(' Erase memory success')
     else:
         print(' Erase memory failed')

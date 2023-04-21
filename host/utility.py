@@ -55,6 +55,11 @@ def serial_port_write(port, buffer):
 def serial_port_read(port, len):
     return port.read(len)
 
+# read bytes from serial port and convert to integer
+def serial_read_to_int(port, len):
+    data = serial_port_read(port, len)
+    return int.from_bytes(data, 'little')
+
 # compute CRC value
 def compute_crc(buffer):
     crc = const.CRC_INIT
