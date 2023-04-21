@@ -22,6 +22,35 @@ void flash_unlock_sequence(void)
     FLASH_KEYR = FLASH_UNLOCK_KEY2;
 }
 
+/* perform write operation */
+bool flash_write(uint32_t base_addr, uint8_t *buffer, uint8_t len)
+{
+    /* enable flash programming */
+    FLASH_CR |= 1 << 0;
+
+    uint16_t *addr = (uint16_t *) base_addr;
+    for (uint8_t i = 0; i < len; i += 2) {
+        /* write to flash (half-word) */
+        *addr++ = *(uint16_t *) (buffer + i);
+
+        /* wait flash operation complete */
+        WAIT_BSY();
+
+        /* check EOP */
+        if (!(FLASH_SR & 0x00000020)) {
+            /* disable page erase */
+            FLASH_CR &= ~(1 << 0);
+            return false;
+        }
+        /* reset EOP */
+        FLASH_SR |= 1 << 5;
+    }
+
+    /* disable flash programming */
+    FLASH_CR &= ~(1 << 0);
+    return true;
+}
+
 /* perform erase operation */
 bool flash_erase(uint8_t page, uint8_t page_num)
 {
@@ -51,7 +80,6 @@ bool flash_erase(uint8_t page, uint8_t page_num)
 
     /* disable page erase */
     FLASH_CR &= ~(1 << 1);
-
     return true;
 }
 

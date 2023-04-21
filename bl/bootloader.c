@@ -38,6 +38,7 @@
 #define BL_GET_ID_LEN 4
 #define BL_GET_PROTECT_LEVEL_LEN 1
 #define BL_JUMP_TO_APP_LEN 0
+#define BL_WRITE_MEM_LEN 1
 #define BL_ERASE_MEM_LEN 1
 
 struct bl_command {
@@ -232,7 +233,36 @@ static void bl_jump_to_app(struct bl_command *command)
  * Write up to 256 bytes to the RAM or flash memory starting from an
  * address specified by the application
  */
-static void bl_write_mem(struct bl_command *command) {}
+static void bl_write_mem(struct bl_command *command)
+{
+    uint32_t crc = *(uint32_t *) command->crc;
+
+    /* CRC verify failed */
+    if (!bl_crc_verify(command, 2 + command->length, crc)) {
+        /* send nack to host */
+        bl_send_nack();
+        return;
+    }
+
+    /* send ack */
+    bl_send_ack(BL_WRITE_MEM_LEN);
+
+    /* decode buffer */
+    uint32_t base_addr = *(uint32_t *) command->buffer;
+    uint8_t bin_len = command->buffer[4];
+    uint8_t *bin_data = command->buffer + 5;
+
+    /* check lock bit */
+    if (FLASH_CR & 0x00000080) {
+        flash_unlock_sequence();
+    }
+    /* write flash */
+    uint8_t res = flash_write(base_addr, bin_data, bin_len);
+    /* enable lock */
+    SET_LOCK();
+
+    bl_send_data(&res, BL_WRITE_MEM_LEN);
+}
 
 /* handle BL_ERASE_MEM
  * Erase from one to all the flash memory pages

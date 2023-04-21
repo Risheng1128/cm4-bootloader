@@ -19,12 +19,16 @@ $(BL-TARGET):
 $(APP-TARGET):
 	$(MAKE) -C app OUT=$(OUT) BIN=$(APP-BIN)
 
+# generate application binary file
+bin: $(APP-TARGET)
+	$(COPY) -O binary $^ $^.bin
+
 host:
 	python3 host/host.py -p $(PORT)
 
 disassembly: $(BL-TARGET) $(APP-TARGET)
-	$(TOOLCHAIN)objdump -d $^ > $(BL-TARGET).S
-	$(TOOLCHAIN)objdump -d $(APP-TARGET) > $(APP-TARGET).S
+	$(DUMP) -d $^ > $(BL-TARGET).S
+	$(DUMP) -d $(APP-TARGET) > $(APP-TARGET).S
 
 debug:
 	openocd -f board/st_nucleo_f3.cfg
@@ -37,4 +41,4 @@ upload:
 clean:
 	-@$(RM) -r $(OUT)
 
-.PHONY: all $(BL-TARGET) $(APP-TARGET) host disassembly debug upload clean
+.PHONY: all $(BL-TARGET) $(APP-TARGET) bin host disassembly debug upload clean

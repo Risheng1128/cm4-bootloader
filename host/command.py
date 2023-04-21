@@ -164,8 +164,76 @@ def do_jump_to_app(port):
 Write up to 256 bytes to the RAM or flash memory starting from an
 address specified by the application
 '''
+def send_write_mem_cmd(port, buf_len, addr, bin_len, bin_data):
+    buffer = bytearray()
+    # add command code
+    buffer.append(const.BL_WRITE_MEM)
+    # add command buffer length
+    buffer.append(buf_len)
+    # add base address
+    for i in addr.to_bytes(4, 'little'):
+        buffer.append(i)
+    # add bin_len
+    buffer.append(bin_len)
+    # add binary data
+    for i in bin_data:
+        buffer.append(i)
+    crc = utility.compute_crc(buffer)
+    for i in crc.to_bytes(4, 'little'):
+        buffer.append(i)
+
+    # send command
+    utility.serial_port_write(port, buffer)
+
+    # read ACK/NACK
+    ack_or_nack = utility.serial_port_read(port, 1)
+    ack_or_nack = int.from_bytes(ack_or_nack, 'little')
+    # check ACK/NACK
+    if ack_or_nack == const.NACK:
+        print(' Read NACK')
+        return
+
+    reply_len = utility.serial_port_read(port, 1)
+    reply_len = int.from_bytes(reply_len, 'little')
+    reply = utility.serial_port_read(port, reply_len)
+    reply = int.from_bytes(reply, 'little')
+    if reply:
+        print(' Write memory success')
+    else:
+        print(' Write memory failed')
+
+'''
+Send a binary file to the assigned address
+'''
 def do_write_mem(port):
-    pass
+    file_path = input(' Type the file path: ')
+    addr = int(input(' Type the base address: '), 16)
+
+    # open the binary file
+    print(' open file: ', file_path)
+    with open(file_path, 'rb') as file:
+        bin_data = file.read()
+
+    bin_len = bin_data.__len__()
+    quot = int(bin_len / const.MAX_BIN_LEN)
+    remain = bin_len % const.MAX_BIN_LEN
+
+    index = 0
+    print(' Write binary file ...')
+    # binary file exceed 250 bytes
+    for i in range(quot):
+        print(' round', i + 1, ': ')
+        # send write memory command
+        send_write_mem_cmd(port, const.BL_WRITE_MEM_MAX_LEN, addr,
+                           const.MAX_BIN_LEN,
+                           bin_data[index : index + const.MAX_BIN_LEN])
+
+        addr += const.MAX_BIN_LEN
+        index += const.MAX_BIN_LEN
+
+    print(' final round: ')
+    send_write_mem_cmd(port, remain + 5, addr, remain,
+                       bin_data[index : index + remain])
 
 '''
 Erase from one to all the flash memory pages

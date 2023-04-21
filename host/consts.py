@@ -23,6 +23,7 @@ BL_GET_ID_LEN            = 0
 BL_GET_PROTECT_LEVEL_LEN = 0
 BL_JUMP_TO_APP_LEN       = 0
 BL_ERASE_MEM_LEN         = 2
+BL_WRITE_MEM_MAX_LEN     = 255
 
 # USART setting
 USART_BAUDRATE = 38400
@@ -34,3 +35,6 @@ CRC_POL = 0x04c11db7
 # ACK/NACK
 ACK = 0
 NACK = 1
+
+# maximum of bytes to send from binary file
+MAX_BIN_LEN = 250

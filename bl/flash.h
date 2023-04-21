@@ -35,6 +35,9 @@
 /* perform unlock sequence */
 void flash_unlock_sequence(void);
 
+/* perform write operation */
+bool flash_write(uint32_t base_addr, uint8_t *buffer, uint8_t len);
+
 /* perform erase operation */
 bool flash_erase(uint8_t page, uint8_t page_num);
 

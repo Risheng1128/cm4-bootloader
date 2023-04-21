@@ -113,6 +113,18 @@ The following picture shows the command package format.
 +--------------+-------------+--------+----------+
 ```
 
+#### Write memory command format
+The following picture shows the command format of memory erasing.
+1. Buffer is composed of a combination of "base address", "payload length" and "payload".
+2. Base addrress means the first address to write data. (4 bytes)
+3. Payload length means the length of payload. (1 byte)
+4. Payload means the data to write to flash. (Up to 250 bytes)
+```
++--------------+-------------+--------------+----------------+---------+----------+
+| command code | buffer size | base address | payload length | payload | CRC data |
++--------------+-------------+--------------+----------------+---------+----------+
+```
+
 #### Erase memory command format
 The following picture shows the command format of memory erasing.
 1. Buffer is composed of a combination of "page number" and "number of page".
@@ -134,7 +146,7 @@ The following shows all commands provided by `cm4-bootloader`. It refers to [USA
 | BL_GET_PROTECT_LEVEL | 0x03 | Get the protection level status |
 | BL_READ_MEM          | 0x11 | Read up to 256 bytes of memory starting from an address specified by the application |
 | BL_JUMP_TO_APP       | 0x21 | Jump to user application code located in the internal flash memory or in the SRAM |
-| BL_WRITE_MEM         | 0x31 | Write up to 256 bytes to the RAM or flash memory starting from an address specified by the application |
+| BL_WRITE_MEM         | 0x31 | Write a binary file data to flash |
 | BL_ERASE_MEM         | 0x43 | Erase from one to all the flash memory pages |
 | BL_ERASE_MEM_EXT     | 0x44 | Erase from one to all the flash memory pages using two-byte addressing mode |
 | BL_SPECIAL           | 0x50 | Generic command that allows to add new features depending on the product constraints, without adding a new command for every feature |
@@ -152,11 +164,11 @@ However, there are still some commands that have not been implemented yet.
   - BL_GET_ID
   - BL_GET_PROTECT_LEVEL
   - BL_JUMP_TO_APP
+  - BL_WRITE_MEM
   - BL_ERASE_MEM
 
 - Not done
   - BL_READ_MEM
-  - BL_WRITE_MEM
   - BL_ERASE_MEM_EXT
   - BL_SPECIAL
   - BL_SPECIAL_EXT
