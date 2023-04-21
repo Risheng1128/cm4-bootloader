@@ -9,11 +9,12 @@
 #define FLASH_UNLOCK_KEY2 0xCDEF89ABU
 
 /* wait flash operation complete */
-#define WAIT_BSY()                       \
-    do {                                 \
-        while (FLASH_SR & (0x00000001)); \
+#define WAIT_BSY()                      \
+    do {                                \
+        while (FLASH_SR & (0x00000001)) \
+            ;                           \
     } while (0)
-    
+
 /* perform unlock sequence */
 void flash_unlock_sequence(void)
 {

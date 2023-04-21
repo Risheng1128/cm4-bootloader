@@ -261,8 +261,8 @@ static void bl_erase_mem(struct bl_command *command)
         flash_unlock_sequence();
     }
 
-    uint8_t res = (page == 0xFF) ? flash_mass_erase()
-                                 : flash_erase(page, page_num);
+    uint8_t res =
+        (page == 0xFF) ? flash_mass_erase() : flash_erase(page, page_num);
     /* enable lock */
     SET_LOCK();
 

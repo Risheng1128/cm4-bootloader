@@ -1,0 +1,9 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  coding-style:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: check coding style
+      run: sh .github/workflows/coding-style.sh
