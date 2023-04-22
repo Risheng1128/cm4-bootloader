@@ -4,6 +4,7 @@
  */
 
 #include <stdbool.h>
+#include <string.h>
 #include "common.h"
 #include "crc.h"
 #include "flash.h"
@@ -23,13 +24,13 @@
     _(get_version, 0x01, 3)       \
     _(get_id, 0x02, 4)            \
     _(get_protect_level, 0x03, 1) \
+    _(read_mem, 0x11, 1)          \
     _(jump_to_app, 0x21, 0)       \
     _(write_mem, 0x31, 1)         \
     _(erase_mem, 0x43, 1)
 
 /* unimplement command list */
 #define BL_UNIMP_CMD_LIST    \
-    _(read_mem, 0x11)        \
     _(erase_mem_ext, 0x44)   \
     _(special, 0x50)         \
     _(special_ext, 0x51)     \
@@ -149,7 +150,21 @@ static void do_get_protect_level(struct bl_command *command UNUSED)
  * Read up to 256 bytes of memory starting from an address specified
  * by the application
  */
-static void do_read_mem(struct bl_command *command UNUSED) {}
+static void do_read_mem(struct bl_command *command UNUSED)
+{
+    /* decode buffer */
+    uint32_t base_addr = *(uint32_t *) command->buffer;
+    uint8_t len = command->buffer[4] + 1;
+    uint8_t buffer[len];
+
+    memcpy(buffer, (uint8_t *) base_addr, len);
+    /* check read data correct */
+    uint8_t res = !strncmp(buffer, (uint8_t *) base_addr, len);
+
+    bl_send_data(&res, bl_write_mem_len);
+    /* send data */
+    bl_send_data(buffer, len);
+}
 
 /* handle BL_JUMP_TO_APP
  * Jump to user application code located in the internal flash memory or

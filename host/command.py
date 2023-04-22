@@ -117,7 +117,34 @@ Read up to 256 bytes of memory starting from an address specified
 by the application
 '''
 def do_read_mem(port):
-    pass
+    addr = int(input(' Type the base address: '), 16)
+    len = int(input(' Type the length of data (1 ~ 256): '))
+    if (len < 1 or len > 256):
+        print(' Incorrect length of data')
+        return
+
+    buffer = command_package(const.BL_READ_MEM,
+                             const.BL_READ_MEM_LEN)
+    # add base address
+    buffer.append_int(addr)
+    # add the length of data (0 ~ 255)
+    buffer.append(len - 1)
+    buffer.append_crc()
+    buffer.send_command(port)
+    print(' Read data ...')
+
+    # read ACK/NACK
+    if utility.serial_read_to_int(port, 1) == const.NACK:
+        print(' Read NACK')
+        return
+
+    reply_len = utility.serial_read_to_int(port, 1)
+    if utility.serial_port_read(port, reply_len):
+        reply = utility.serial_port_read(port, len)
+        print(' Read data success')
+        print(' Data: ', [hex(i) for i in reply])
+    else:
+        print(' Write memory failed')
 
 '''
 Jump to user application code located in the internal flash memory or
@@ -146,7 +173,7 @@ def send_write_mem_cmd(port, buf_len, addr, bin_len, bin_data):
                              buf_len)
     # add base address
     buffer.append_int(addr)
-    # add bin_len
+    # add binary length
     buffer.append(bin_len)
     # add binary data
     buffer.append_bytes_array(bin_data)

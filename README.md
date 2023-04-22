@@ -113,10 +113,21 @@ The following picture shows the command package format.
 +--------------+-------------+--------+----------+
 ```
 
+#### Read memory command format
+The following picture shows the command format of memory reading.
+1. Buffer is composed of a combination of "base address" and "length of data".
+2. Base addrress means the first address to read. (4 bytes)
+3. Length of data means the number of data to read. (Up to 256 bytes)
+```
++--------------+-------------+--------------+----------------+----------+
+| command code | buffer size | base address | length of data | CRC data |
++--------------+-------------+--------------+----------------+----------+
+```
+
 #### Write memory command format
-The following picture shows the command format of memory erasing.
+The following picture shows the command format of memory writing.
 1. Buffer is composed of a combination of "base address", "payload length" and "payload".
-2. Base addrress means the first address to write data. (4 bytes)
+2. Base addrress means the first address to write. (4 bytes)
 3. Payload length means the length of payload. (1 byte)
 4. Payload means the data to write to flash. (Up to 250 bytes)
 ```
@@ -163,12 +174,12 @@ However, there are still some commands that have not been implemented yet.
   - BL_GET_VERSION
   - BL_GET_ID
   - BL_GET_PROTECT_LEVEL
+  - BL_READ_MEM
   - BL_JUMP_TO_APP
   - BL_WRITE_MEM
   - BL_ERASE_MEM
 
 - Not done
-  - BL_READ_MEM
   - BL_ERASE_MEM_EXT
   - BL_SPECIAL
   - BL_SPECIAL_EXT
