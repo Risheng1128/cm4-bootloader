@@ -34,6 +34,11 @@ class command_package:
 '''
 Get the version and the allowed commands supported by the current
 version of the protocol
+
+Command format:
++--------------+-------------+-----+
+| command code | buffer size | CRC |
++--------------+-------------+-----+
 '''
 def do_get_cmd(port):
     buffer = command_package(const.BL_GET_CMD,
@@ -52,6 +57,11 @@ def do_get_cmd(port):
 
 '''
 Get the protocol version
+
+Command format:
++--------------+-------------+-----+
+| command code | buffer size | CRC |
++--------------+-------------+-----+
 '''
 def do_get_version(port):
     buffer = command_package(const.BL_GET_VERSION,
@@ -70,6 +80,11 @@ def do_get_version(port):
 
 '''
 Get the chip ID
+
+Command format:
++--------------+-------------+-----+
+| command code | buffer size | CRC |
++--------------+-------------+-----+
 '''
 def do_get_id(port):
     buffer = command_package(const.BL_GET_ID,
@@ -90,6 +105,11 @@ def do_get_id(port):
 
 '''
 Get the protection level status
+
+Command format:
++--------------+-------------+-----+
+| command code | buffer size | CRC |
++--------------+-------------+-----+
 '''
 def do_get_protect_level(port):
     buffer = command_package(const.BL_GET_PROTECT_LEVEL,
@@ -115,6 +135,11 @@ def do_get_protect_level(port):
 '''
 Read up to 256 bytes of memory starting from an address specified
 by the application
+
+Command format:
++--------------+-------------+--------------+-------------+-----+
+| command code | buffer size | base address | data length | CRC |
++--------------+-------------+--------------+-------------+-----+
 '''
 def do_read_mem(port):
     addr = int(input(' Type the base address: '), 16)
@@ -125,9 +150,7 @@ def do_read_mem(port):
 
     buffer = command_package(const.BL_READ_MEM,
                              const.BL_READ_MEM_LEN)
-    # add base address
     buffer.append_int(addr)
-    # add the length of data (0 ~ 255)
     buffer.append(len - 1)
     buffer.append_crc()
     buffer.send_command(port)
@@ -149,6 +172,11 @@ def do_read_mem(port):
 '''
 Jump to user application code located in the internal flash memory or
 in the SRAM
+
+Command format:
++--------------+-------------+-----+
+| command code | buffer size | CRC |
++--------------+-------------+-----+
 '''
 def do_jump_to_app(port):
     buffer = command_package(const.BL_JUMP_TO_APP,
@@ -167,15 +195,17 @@ def do_jump_to_app(port):
 '''
 Write up to 256 bytes to the RAM or flash memory starting from an
 address specified by the application
+
+Command format:
++--------------+-------------+--------------+----------------+---------+-----+
+| command code | buffer size | base address | payload length | payload | CRC |
++--------------+-------------+--------------+----------------+---------+-----+
 '''
 def send_write_mem_cmd(port, buf_len, addr, bin_len, bin_data):
     buffer = command_package(const.BL_WRITE_MEM,
                              buf_len)
-    # add base address
     buffer.append_int(addr)
-    # add binary length
     buffer.append(bin_len)
-    # add binary data
     buffer.append_bytes_array(bin_data)
     buffer.append_crc()
     buffer.send_command(port)
@@ -226,6 +256,11 @@ def do_write_mem(port):
 
 '''
 Erase from one to all the flash memory pages
+
+Command format:
++--------------+-------------+-------------+----------------+-----+
+| command code | buffer size | page number | number of page | CRC |
++--------------+-------------+-------------+----------------+-----+
 '''
 def do_erase_mem(port):
     page = int(input(' Type the page number (0 ~ 255): '))
@@ -240,7 +275,6 @@ def do_erase_mem(port):
 
     buffer = command_package(const.BL_ERASE_MEM,
                              const.BL_ERASE_MEM_LEN)
-    # add buffer data
     buffer.append(page)
     buffer.append(page_num)
     buffer.append_crc()
