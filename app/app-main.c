@@ -1,6 +1,6 @@
 /**
  * @file  app-main.c
- * @brief applicarion main function
+ * @brief application main function
  */
 
 #include <stdint.h>
