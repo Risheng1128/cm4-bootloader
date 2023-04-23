@@ -1,4 +1,3 @@
-import os
 import utility
 import consts as const
 
@@ -342,67 +341,44 @@ Compute a CRC value on a given memory area with a size multiple of 4 bytes
 def do_get_checksum(port):
     pass
 
-def decode_command_code(port, command_code):
-    match (command_code):
-        case (0):  # Menu exit
+def decode_command_code(port, screen, command):
+    print(' Command --> ', command)
+    match (command):
+        case ('BL_GET_CMD'):
+            do_get_cmd(port)
+        case ('BL_GET_VERSION'):
+            do_get_version(port)
+        case ('BL_GET_ID'):
+            do_get_id(port)
+        case ('BL_GET_PROTECT_LEVEL'):
+            do_get_protect_level(port)
+        case ('BL_READ_MEM'):
+            do_read_mem(port)
+        case ('BL_JUMP_TO_APP'):
+            do_jump_to_app(port)
+        case ('BL_WRITE_MEM'):
+            do_write_mem(port)
+        case ('BL_ERASE_MEM'):
+            do_erase_mem(port)
+        case ('BL_ERASE_MEM_EXT'):
+            do_erase_mem_ext(port)
+        case ('BL_SPECIAL'):
+            do_special(port)
+        case ('BL_SPECIAL_EXT'):
+            do_special_ext(port)
+        case ('BL_WRITE_PROTECT'):
+            do_write_protect(port)
+        case ('BL_WRITE_UNPROTECT'):
+            do_write_unprotect(port)
+        case ('BL_READ_PROTECT'):
+            do_read_protect(port)
+        case ('BL_READ_UNPROTECT'):
+            do_read_unprotect(port)
+        case ('BL_GET_CHECKSUM'):
+            do_get_checksum(port)
+        case ('Exit'):
+            utility.screen_deinit(screen)
             print(' Exiting ...')
             raise SystemExit
-        case (1):  # BL_GET_CMD
-            print(' Command --> BL_GET_CMD')
-            do_get_cmd(port)
-        case (2):  # BL_GET_VERSION
-            print(' Command --> BL_GET_VERSION')
-            do_get_version(port)
-        case (3):  # BL_GET_ID
-            print(' Command --> BL_GET_ID')
-            do_get_id(port)
-        case (4):  # BL_GET_PROTECT_LEVEL
-            print(' Command --> BL_GET_PROTECT_LEVEL')
-            do_get_protect_level(port)
-        case (5):  # BL_READ_MEM
-            print(' Command --> BL_READ_MEM')
-            do_read_mem(port)
-        case (6):  # BL_JUMP_TO_APP
-            print(' Command --> BL_JUMP_TO_APP')
-            do_jump_to_app(port)
-        case (7):  # BL_WRITE_MEM
-            print(' Command --> BL_WRITE_MEM')
-            do_write_mem(port)
-        case (8):  # BL_ERASE_MEM
-            print(' Command --> BL_ERASE_MEM')
-            do_erase_mem(port)
-        case (9):  # BL_ERASE_MEM_EXT
-            print(' Command --> BL_ERASE_MEM_EXT')
-            do_erase_mem_ext(port)
-        case (10):  # BL_SPECIAL
-            print(' Command --> BL_SPECIAL')
-            do_special(port)
-        case (11): # BL_SPECIAL_EXT
-            print(' Command --> BL_SPECIAL_EXT')
-            do_special_ext(port)
-        case (12): # BL_WRITE_PROTECT
-            print(' Command --> BL_WRITE_PROTECT')
-            do_write_protect(port)
-        case (13): # BL_WRITE_UNPROTECT
-            print(' Command --> BL_WRITE_UNPROTECT')
-            do_write_unprotect(port)
-        case (14): # BL_READ_PROTECT
-            print(' Command --> BL_READ_PROTECT')
-            do_read_protect(port)
-        case (15): # BL_READ_UNPROTECT
-            print(' Command --> BL_READ_UNPROTECT')
-            do_read_unprotect(port)
-        case (16): # BL_GET_CHECKSUM
-            print(' Command --> BL_GET_CHECKSUM')
-            do_get_checksum(port)
-        case (17):
-            # display all valid serial ports
-            print(' show valid ports... ')
-            utility.serial_port_list()
-        case (18):
-            os.system('clear')
-        case (19):
-            # display command menu
-            utility.print_menu()
         case _:
             pass

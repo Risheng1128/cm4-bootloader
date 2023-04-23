@@ -1,6 +1,6 @@
+import os
 import argparse
 import utility
-import command
 
 if __name__ == '__main__':
     parse = argparse.ArgumentParser()
@@ -10,12 +10,21 @@ if __name__ == '__main__':
 
     # connect serial port
     port = utility.serial_port_setting(args.port)
+    os.system('clear')
 
-    utility.print_menu()
+    curr = 0
     while True:
-        command_code = input('\n Type the command code here: ')
-        if not command_code.isdigit():
-            print('please input valid code')
-            continue
+        # ui initialization
+        screen = utility.screen_init()
 
-        command.decode_command_code(port, int(command_code))
+        # clear screen
+        screen.clear()
+
+        # display menu
+        utility.print_menu(screen, curr)
+
+        # get user input
+        key = screen.getch()
+
+        # select user input
+        curr = utility.select_key(port, screen, key, curr)

@@ -1,4 +1,25 @@
-# bootloader command
+# UI command list
+command_list = {
+    0: 'BL_GET_CMD',
+    1: 'BL_GET_VERSION',
+    2: 'BL_GET_ID',
+    3: 'BL_GET_PROTECT_LEVEL',
+    4: 'BL_READ_MEM',
+    5: 'BL_JUMP_TO_APP',
+    6: 'BL_WRITE_MEM',
+    7: 'BL_ERASE_MEM',
+    8: 'BL_ERASE_MEM_EXT',
+    9: 'BL_SPECIAL',
+    10: 'BL_SPECIAL_EXT',
+    11: 'BL_WRITE_PROTECT',
+    12: 'BL_WRITE_UNPROTECT',
+    13: 'BL_READ_PROTECT',
+    14: 'BL_READ_UNPROTECT',
+    15: 'BL_GET_CHECKSUM',
+    16: 'Exit',
+}
+
+# bootloader command code list
 BL_GET_CMD           = 0x00
 BL_GET_VERSION       = 0x01
 BL_GET_ID            = 0x02
