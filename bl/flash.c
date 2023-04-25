@@ -108,3 +108,9 @@ bool flash_mass_erase(void)
     FLASH_CR &= ~(1 << 2);
     return true;
 }
+
+/* check flash operation is on */
+bool flash_is_on(void)
+{
+    return FLASH_SR & (0x00000001);
+}

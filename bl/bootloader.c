@@ -200,13 +200,22 @@ static void do_write_mem(struct bl_command *command UNUSED)
     uint32_t base_addr = *(uint32_t *) command->buffer;
     uint8_t bin_len = command->buffer[4];
     uint8_t *bin_data = command->buffer + 5;
+    uint8_t res = 0;
+
+    /* check flash operation is on */
+    if (flash_is_on()) {
+        /* send write failed to host */
+        bl_send_data(&res, bl_erase_mem_len);
+        return;
+    }
 
     /* check lock bit */
     if (FLASH_CR & 0x00000080) {
         flash_unlock_sequence();
     }
+
     /* write flash */
-    uint8_t res = flash_write(base_addr, bin_data, bin_len);
+    res = flash_write(base_addr, bin_data, bin_len);
     /* enable lock */
     SET_LOCK();
 
@@ -222,14 +231,21 @@ static void do_erase_mem(struct bl_command *command UNUSED)
     uint8_t page = command->buffer[0];
     /* the number of page to erase */
     uint8_t page_num = command->buffer[1];
+    uint8_t res = 0;
+
+    /* check flash operation is on */
+    if (flash_is_on()) {
+        /* send erase failed to host */
+        bl_send_data(&res, bl_erase_mem_len);
+        return;
+    }
 
     /* check lock bit */
     if (FLASH_CR & 0x00000080) {
         flash_unlock_sequence();
     }
 
-    uint8_t res =
-        (page == 0xFF) ? flash_mass_erase() : flash_erase(page, page_num);
+    res = (page == 0xFF) ? flash_mass_erase() : flash_erase(page, page_num);
     /* enable lock */
     SET_LOCK();
 

@@ -43,3 +43,6 @@ bool flash_erase(uint8_t page, uint8_t page_num);
 
 /* perform mass erase operation */
 bool flash_mass_erase(void);
+
+/* check flash operation is on */
+bool flash_is_on(void);
