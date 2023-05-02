@@ -313,9 +313,50 @@ def do_special_ext(port):
 
 '''
 Enable the write protection for some sectors
+- One bit of the user option bytes is used to protect 2 pages of 2 Kbytes in
+  the main memory block.
+- Page 62 ~ 255 is protected by 1 bit.
+
+Command format:
++--------------+-------------+----------------+--------------+-----+
+| command code | buffer size | number of page | page numbers | CRC |
++--------------+-------------+----------------+--------------+-----+
 '''
 def do_write_protect(port):
-    pass
+    print(' Type the number of page to write protection: (1 ~ 32) :')
+    page_num = int(input())
+    if ((page_num - 1) & 0xffffffe0):
+        print(' Incorrect the number of page')
+        return
+
+    page_array = []
+    for i in range(page_num):
+        print(' Type the page number of page[' + str(i + 1) + '] (0 ~ 255) : ')
+        page = int(input())
+        if (page & 0xffffff00):
+            print(' Incorrect page number')
+            return
+
+        page_array.append(page)
+
+    buffer = command_package(const.BL_WRITE_PROTECT, page_num + 1)
+    buffer.append(page_num)
+    for i in page_array:
+        buffer.append(i)
+    buffer.append_crc()
+    buffer.send_command(port)
+    print(' Do the write protection ...')
+
+    # read ACK/NACK
+    if utility.serial_read_to_int(port, 1) == const.NACK:
+        print(' Read NACK')
+        return
+
+    reply_len = utility.serial_read_to_int(port, 1)
+    if utility.serial_read_to_int(port, reply_len):
+        print(' Write protection success')
+    else:
+        print(' Write protection failed')
 
 '''
 Disable the write protection for all flash memory sectors

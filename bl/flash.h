@@ -20,6 +20,8 @@
 
 /* flash key register */
 #define FLASH_KEYR *(volatile uint32_t *) 0x40022004U
+/* Flash option key register */
+#define FLASH_OPTKEYR *(volatile uint32_t *) 0x40022008U
 /* flash status register */
 #define FLASH_SR *(volatile uint32_t *) 0x4002200CU
 /* flash control register */
@@ -35,6 +37,9 @@
 /* perform unlock sequence */
 void flash_unlock_sequence(void);
 
+/* perform option unlock sequence */
+void flash_opt_unlock_sequence(void);
+
 /* perform write operation */
 bool flash_write(uint32_t base_addr, uint8_t *buffer, uint8_t len);
 
@@ -43,6 +48,9 @@ bool flash_erase(uint8_t page, uint8_t page_num);
 
 /* perform mass erase operation */
 bool flash_mass_erase(void);
+
+/* perform write protection operation */
+bool flash_write_protection(uint8_t *page, uint8_t page_num);
 
 /* check flash operation is on */
 bool flash_is_on(void);

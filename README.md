@@ -146,6 +146,17 @@ The following picture shows the command format of memory erasing.
 +--------------+-------------+-------------+----------------+----------+
 ```
 
+#### Write protection option bytes command format
+Enable the write protection for some sectors
+- One bit of the user option bytes is used to protect 2 pages of 2 Kbytes in
+  the main memory block.
+- Page 62 ~ 255 is protected by 1 bit.
+```
++--------------+-------------+----------------+--------------+----------+
+| command code | buffer size | number of page | page numbers | CRC data |
++--------------+-------------+----------------+--------------+----------+
+```
+
 ## Bootloader commands
 The following shows all commands provided by `cm4-bootloader`. It refers to [USART protocol used in the STM32 bootloader](https://www.st.com/resource/en/application_note/an3155-usart-protocol-used-in-the-stm32-bootloader-stmicroelectronics.pdf).
 
@@ -178,12 +189,12 @@ However, there are still some commands that have not been implemented yet.
   - BL_JUMP_TO_APP
   - BL_WRITE_MEM
   - BL_ERASE_MEM
+  - BL_WRITE_PROTECT
 
 - Not done
   - BL_ERASE_MEM_EXT
   - BL_SPECIAL
   - BL_SPECIAL_EXT
-  - BL_WRITE_PROTECT
   - BL_WRITE_UNPROTECT
   - BL_READ_PROTECT
   - BL_READ_UNPROTECT
