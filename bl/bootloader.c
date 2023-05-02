@@ -142,7 +142,7 @@ static void do_get_id(struct bl_command *command UNUSED)
  */
 static void do_get_protect_level(struct bl_command *command UNUSED)
 {
-    uint8_t protect_level = (FLASH_OBR & 0x00000006) >> 1;
+    uint8_t protect_level = flash_get_protection_level();
     bl_send_data(&protect_level, bl_get_protect_level_len);
 }
 
@@ -177,14 +177,14 @@ static void do_jump_to_app(struct bl_command *command UNUSED)
     crc_reset();
 
     /* set MSP */
-    uint32_t msp = *(volatile uint32_t *) FLASH_PAGE_8_BASE;
+    uint32_t msp = *(volatile uint32_t *) APP_BASE;
     __asm volatile("MSR MSP, %0" ::"r"(msp));
 
     /* set vector table offset */
     VTOR = FLASH_BASE | VECT_TAB_OFF;
 
     /* get application reset handler address */
-    uint32_t app_reset_addr = *(uint32_t *) (FLASH_PAGE_8_BASE + 4);
+    uint32_t app_reset_addr = *(uint32_t *) (APP_BASE + 4);
     /* jump to application */
     void (*app_reset_handler)(void) = (void *) app_reset_addr;
     app_reset_handler();
@@ -209,15 +209,12 @@ static void do_write_mem(struct bl_command *command UNUSED)
         return;
     }
 
-    /* check lock bit */
-    if (FLASH_CR & 0x00000080) {
-        flash_unlock_sequence();
-    }
-
+    /* unlock sequence */
+    flash_unlock_sequence();
     /* write flash */
     res = flash_write(base_addr, bin_data, bin_len);
     /* enable lock */
-    SET_LOCK();
+    flash_set_lock();
 
     bl_send_data(&res, bl_write_mem_len);
 }
@@ -240,14 +237,12 @@ static void do_erase_mem(struct bl_command *command UNUSED)
         return;
     }
 
-    /* check lock bit */
-    if (FLASH_CR & 0x00000080) {
-        flash_unlock_sequence();
-    }
-
+    /* unlock sequence */
+    flash_unlock_sequence();
+    /* erase memory */
     res = (page == 0xFF) ? flash_mass_erase() : flash_erase(page, page_num);
     /* enable lock */
-    SET_LOCK();
+    flash_set_lock();
 
     bl_send_data(&res, bl_erase_mem_len);
 }
@@ -287,16 +282,14 @@ static void do_write_protect(struct bl_command *command UNUSED)
         return;
     }
 
-    /* check lock bit */
-    if (FLASH_CR & 0x00000080) {
-        flash_unlock_sequence();
-    }
+    /* unlock sequence */
+    flash_unlock_sequence();
     /* option unlock sequence */
     flash_opt_unlock_sequence();
-
+    /* write protection */
     res = flash_write_protection(page, page_num);
     /* enable lock */
-    SET_LOCK();
+    flash_set_lock();
 
     bl_send_data(&res, bl_write_protect_len);
 }
