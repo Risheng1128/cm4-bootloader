@@ -159,7 +159,8 @@ static void do_read_mem(struct bl_command *command UNUSED)
 
     memcpy(buffer, (uint8_t *) base_addr, len);
     /* check read data correct */
-    uint8_t res = !strncmp(buffer, (uint8_t *) base_addr, len);
+    uint8_t res =
+        !strncmp((const char *) buffer, (const char *) base_addr, len);
 
     bl_send_data(&res, bl_write_mem_len);
     /* send data */
