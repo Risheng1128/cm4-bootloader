@@ -292,26 +292,6 @@ def do_erase_mem(port):
         print(' Erase memory failed')
 
 '''
-Erase from one to all the flash memory pages using two-byte addressing mode
-'''
-def do_erase_mem_ext(port):
-    pass
-
-'''
-Generic command that allows to add new features depending on the product
-constraints, without adding a new command for every feature
-'''
-def do_special(port):
-    pass
-
-'''
-Generic command that allows the user to send more data compared to
-the special command
-'''
-def do_special_ext(port):
-    pass
-
-'''
 Enable the write protection for some sectors
 - One bit of the user option bytes is used to protect 2 pages of 2 Kbytes in
   the main memory block.
@@ -397,9 +377,9 @@ def do_read_unprotect(port):
     pass
 
 '''
-Compute a CRC value on a given memory area with a size multiple of 4 bytes
+Reload option bytes
 '''
-def do_get_checksum(port):
+def do_reload_opt_bytes(port):
     pass
 
 def decode_command_code(port, screen, command):
@@ -421,12 +401,6 @@ def decode_command_code(port, screen, command):
             do_write_mem(port)
         case ('BL_ERASE_MEM'):
             do_erase_mem(port)
-        case ('BL_ERASE_MEM_EXT'):
-            do_erase_mem_ext(port)
-        case ('BL_SPECIAL'):
-            do_special(port)
-        case ('BL_SPECIAL_EXT'):
-            do_special_ext(port)
         case ('BL_WRITE_PROTECT'):
             do_write_protect(port)
         case ('BL_WRITE_UNPROTECT'):
@@ -435,8 +409,8 @@ def decode_command_code(port, screen, command):
             do_read_protect(port)
         case ('BL_READ_UNPROTECT'):
             do_read_unprotect(port)
-        case ('BL_GET_CHECKSUM'):
-            do_get_checksum(port)
+        case ('BL_RELOAD_OPT_BYTES'):
+            do_reload_opt_bytes(port)
         case ('Exit'):
             utility.screen_deinit(screen)
             print(' Exiting ...')

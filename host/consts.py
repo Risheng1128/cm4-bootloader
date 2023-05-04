@@ -8,15 +8,12 @@ command_list = {
     5: 'BL_JUMP_TO_APP',
     6: 'BL_WRITE_MEM',
     7: 'BL_ERASE_MEM',
-    8: 'BL_ERASE_MEM_EXT',
-    9: 'BL_SPECIAL',
-    10: 'BL_SPECIAL_EXT',
-    11: 'BL_WRITE_PROTECT',
-    12: 'BL_WRITE_UNPROTECT',
-    13: 'BL_READ_PROTECT',
-    14: 'BL_READ_UNPROTECT',
-    15: 'BL_GET_CHECKSUM',
-    16: 'Exit',
+    8: 'BL_WRITE_PROTECT',
+    9: 'BL_WRITE_UNPROTECT',
+    10: 'BL_READ_PROTECT',
+    11: 'BL_READ_UNPROTECT',
+    12: 'BL_RELOAD_OPT_BYTES',
+    13: 'Exit',
 }
 
 # bootloader command code list
@@ -28,14 +25,11 @@ BL_READ_MEM          = 0x11
 BL_JUMP_TO_APP       = 0x21
 BL_WRITE_MEM         = 0x31
 BL_ERASE_MEM         = 0x43
-BL_ERASE_MEM_EXT     = 0x44
-BL_SPECIAL           = 0x50
-BL_SPECIAL_EXT       = 0x51
 BL_WRITE_PROTECT     = 0x63
 BL_WRITE_UNPROTECT   = 0x73
 BL_READ_PROTECT      = 0x82
 BL_READ_UNPROTECT    = 0x92
-BL_GET_CHECKSUM      = 0xA1
+BL_RELOAD_OPT_BYTES  = 0xA1
 
 # bootloader command buffer length
 BL_GET_CMD_LEN           = 0

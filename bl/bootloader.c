@@ -20,7 +20,7 @@
  * (command, code, reply length)
  */
 #define BL_CMD_LIST               \
-    _(get_cmd, 0x00, 7)           \
+    _(get_cmd, 0x00, 10)          \
     _(get_version, 0x01, 3)       \
     _(get_id, 0x02, 4)            \
     _(get_protect_level, 0x03, 1) \
@@ -33,12 +33,9 @@
 
 /* unimplement command list */
 #define BL_UNIMP_CMD_LIST   \
-    _(erase_mem_ext, 0x44)  \
-    _(special, 0x50)        \
-    _(special_ext, 0x51)    \
     _(read_protect, 0x82)   \
     _(read_unprotect, 0x92) \
-    _(get_checksum, 0xA1)
+    _(reload_opt_bytes, 0xA1)
 
 enum bl_cmd_code_list {
 #define _(cmd, code, len) bl_##cmd##_cmd = code,
@@ -248,23 +245,6 @@ static void do_erase_mem(struct bl_command *command UNUSED)
     bl_send_data(&res, bl_erase_mem_len);
 }
 
-/* handle BL_ERASE_MEM_EXT
- * Erase from one to all the flash memory pages using two-byte addressing mode
- */
-static void do_erase_mem_ext(struct bl_command *command UNUSED) {}
-
-/* handle BL_SPECIAL
- * Generic command that allows to add new features depending on the product
- * constraints, without adding a new command for every feature
- */
-static void do_special(struct bl_command *command UNUSED) {}
-
-/* handle BL_SPECIAL_EXT
- * Generic command that allows the user to send more data compared to
- * the special command
- */
-static void do_special_ext(struct bl_command *command UNUSED) {}
-
 /* handle BL_WRITE_PROTECT
  * Enable the write protection for some sectors
  */
@@ -331,10 +311,10 @@ static void do_read_protect(struct bl_command *command UNUSED) {}
  */
 static void do_read_unprotect(struct bl_command *command UNUSED) {}
 
-/* handle BL_GET_CHECKSUM
- * Compute a CRC value on a given memory area with a size multiple of 4 bytes
+/* handle BL_RELOAD_OPT_BYTES
+ * Reload option bytes
  */
-static void do_get_checksum(struct bl_command *command UNUSED) {}
+static void do_reload_opt_bytes(struct bl_command *command UNUSED) {}
 
 #define CMD_HANDLER(cmd, len)                                    \
     static void bl_##cmd(struct bl_command *command)             \
