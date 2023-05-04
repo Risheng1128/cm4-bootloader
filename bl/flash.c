@@ -71,7 +71,7 @@ struct opt_bytes {
     } while (0)
 
 /* check flash operation */
-static bool flash_check_eop(uint16_t clear_bits)
+static bool check_eop(uint16_t clear_bits)
 {
     /* check EOP */
     if (!(FLASH_SR & FLASH_SR_EOP)) {
@@ -84,7 +84,7 @@ static bool flash_check_eop(uint16_t clear_bits)
 }
 
 /* perform option bytes erase operation */
-static bool flash_opt_erase(void)
+static bool opt_erase(void)
 {
     /* check flash operation is on */
     if (flash_is_on()) {
@@ -100,7 +100,7 @@ static bool flash_opt_erase(void)
     WAIT_BSY();
 
     /* check EOP */
-    if (!flash_check_eop(FLASH_CR_OPTER)) {
+    if (!check_eop(FLASH_CR_OPTER)) {
         return false;
     }
     /* disable option byte erase */
@@ -109,7 +109,7 @@ static bool flash_opt_erase(void)
 }
 
 /* assign write protection option bytes */
-static void flash_assign_wrp(uint8_t page, uint16_t *wrp)
+static void assign_wrp(uint8_t page, uint16_t *wrp)
 {
     if (page >= 0 && page < 16) {
         wrp[0] &= ~(1 << (page >> 1));
@@ -124,8 +124,8 @@ static void flash_assign_wrp(uint8_t page, uint16_t *wrp)
     }
 }
 
-/* get current option bytes */
-static void flash_get_opt_bytes(struct opt_bytes *opt_bytes)
+/* read current option bytes */
+static void read_opt_bytes(struct opt_bytes *opt_bytes)
 {
     opt_bytes->rdp = *(uint16_t *) FLASH_OPT_BYTES_BASE;
     opt_bytes->user = *(uint16_t *) (FLASH_OPT_BYTES_BASE + 2);
@@ -135,7 +135,8 @@ static void flash_get_opt_bytes(struct opt_bytes *opt_bytes)
         *(uint32_t *) (FLASH_OPT_BYTES_BASE + 12);
 }
 
-static bool flash_write_opt_bytes(struct opt_bytes *opt_bytes, uint8_t len)
+/* write option bytes */
+static bool write_opt_bytes(struct opt_bytes *opt_bytes, uint8_t len)
 {
     uint16_t *flash_opt_byte = (uint16_t *) FLASH_OPT_BYTES_BASE;
     uint16_t *user_opt_byte = (uint16_t *) opt_bytes;
@@ -148,7 +149,7 @@ static bool flash_write_opt_bytes(struct opt_bytes *opt_bytes, uint8_t len)
         WAIT_BSY();
 
         /* check EOP */
-        if (!flash_check_eop(FLASH_CR_OPTPG | FLASH_CR_OPTWRE)) {
+        if (!check_eop(FLASH_CR_OPTPG | FLASH_CR_OPTWRE)) {
             return false;
         }
     }
@@ -202,7 +203,7 @@ bool flash_write(uint32_t base_addr, uint8_t *buffer, uint8_t len)
         WAIT_BSY();
 
         /* check EOP */
-        if (!flash_check_eop(FLASH_CR_PG)) {
+        if (!check_eop(FLASH_CR_PG)) {
             return false;
         }
     }
@@ -230,7 +231,7 @@ bool flash_erase(uint8_t page, uint8_t page_num)
         WAIT_BSY();
 
         /* check EOP */
-        if (!flash_check_eop(FLASH_CR_PER)) {
+        if (!check_eop(FLASH_CR_PER)) {
             return false;
         }
     }
@@ -252,7 +253,7 @@ bool flash_mass_erase(void)
     WAIT_BSY();
 
     /* check EOP */
-    if (!flash_check_eop(FLASH_CR_MER)) {
+    if (!check_eop(FLASH_CR_MER)) {
         return false;
     }
 
@@ -262,13 +263,13 @@ bool flash_mass_erase(void)
 }
 
 /* perform write protection operation */
-bool flash_write_protection(uint8_t *page, uint8_t page_num)
+bool flash_write_protect(uint8_t *page, uint8_t page_num)
 {
     struct opt_bytes opt_bytes;
 
     /* save current option bytes */
-    flash_get_opt_bytes(&opt_bytes);
-    if (!flash_opt_erase()) {
+    read_opt_bytes(&opt_bytes);
+    if (!opt_erase()) {
         return false;
     }
 
@@ -276,11 +277,11 @@ bool flash_write_protection(uint8_t *page, uint8_t page_num)
     FLASH_CR |= FLASH_CR_OPTPG;
 
     for (uint8_t i = 0; i < page_num; i++) {
-        flash_assign_wrp(page[i], opt_bytes.wrp);
+        assign_wrp(page[i], opt_bytes.wrp);
     }
 
     /* write all option bytes */
-    if (!flash_write_opt_bytes(&opt_bytes, 8)) {
+    if (!write_opt_bytes(&opt_bytes, 8)) {
         return false;
     }
 
@@ -290,14 +291,14 @@ bool flash_write_protection(uint8_t *page, uint8_t page_num)
 }
 
 /* perform write protection operation */
-bool flash_write_unprotection(void)
+bool flash_write_unprotect(void)
 {
     struct opt_bytes opt_bytes;
 
     /* save current option bytes */
-    flash_get_opt_bytes(&opt_bytes);
+    read_opt_bytes(&opt_bytes);
     /* erase option bytes */
-    if (!flash_opt_erase()) {
+    if (!opt_erase()) {
         return false;
     }
 
@@ -305,7 +306,7 @@ bool flash_write_unprotection(void)
     FLASH_CR |= FLASH_CR_OPTPG;
 
     /* write half option bytes */
-    if (!flash_write_opt_bytes(&opt_bytes, 4)) {
+    if (!write_opt_bytes(&opt_bytes, 4)) {
         return false;
     }
 

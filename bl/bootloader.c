@@ -288,7 +288,7 @@ static void do_write_protect(struct bl_command *command UNUSED)
     /* option unlock sequence */
     flash_opt_unlock_sequence();
     /* write protection */
-    res = flash_write_protection(page, page_num);
+    res = flash_write_protect(page, page_num);
     /* enable lock */
     flash_set_lock();
 
@@ -314,7 +314,7 @@ static void do_write_unprotect(struct bl_command *command UNUSED)
     /* option unlock sequence */
     flash_opt_unlock_sequence();
     /* write protection */
-    res = flash_write_unprotection();
+    res = flash_write_unprotect();
     /* enable lock */
     flash_set_lock();
 

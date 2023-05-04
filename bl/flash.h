@@ -40,7 +40,7 @@ bool flash_erase(uint8_t page, uint8_t page_num);
 bool flash_mass_erase(void);
 
 /* perform write protection operation */
-bool flash_write_protection(uint8_t *page, uint8_t page_num);
+bool flash_write_protect(uint8_t *page, uint8_t page_num);
 
 /* perform write protection operation */
-bool flash_write_unprotection(void);
+bool flash_write_unprotect(void);
