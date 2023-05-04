@@ -41,3 +41,6 @@ bool flash_mass_erase(void);
 
 /* perform write protection operation */
 bool flash_write_protection(uint8_t *page, uint8_t page_num);
+
+/* perform write protection operation */
+bool flash_write_unprotection(void);

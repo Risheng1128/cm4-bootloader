@@ -360,9 +360,29 @@ def do_write_protect(port):
 
 '''
 Disable the write protection for all flash memory sectors
+
+Command format:
++--------------+-------------+-----+
+| command code | buffer size | CRC |
++--------------+-------------+-----+
 '''
 def do_write_unprotect(port):
-    pass
+    buffer = command_package(const.BL_WRITE_UNPROTECT,
+                             const.BL_WRITE_UNPROTECT_LEN)
+    buffer.append_crc()
+    buffer.send_command(port)
+    print(' Do the write unprotection ...')
+
+    # read ACK/NACK
+    if utility.serial_read_to_int(port, 1) == const.NACK:
+        print(' Read NACK')
+        return
+
+    reply_len = utility.serial_read_to_int(port, 1)
+    if utility.serial_read_to_int(port, reply_len):
+        print(' Write unprotection success')
+    else:
+        print(' Write unprotection failed')
 
 '''
 Enable the read protection

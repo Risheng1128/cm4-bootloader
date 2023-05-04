@@ -157,6 +157,14 @@ Enable the write protection for some sectors
 +--------------+-------------+----------------+--------------+----------+
 ```
 
+#### Write unprotection option bytes command format
+Disable the write protection for all flash memory sectors
+```
++--------------+-------------+----------+
+| command code | buffer size | CRC data |
++--------------+-------------+----------+
+```
+
 ## Bootloader commands
 The following shows all commands provided by `cm4-bootloader`. It refers to [USART protocol used in the STM32 bootloader](https://www.st.com/resource/en/application_note/an3155-usart-protocol-used-in-the-stm32-bootloader-stmicroelectronics.pdf).
 
@@ -190,12 +198,12 @@ However, there are still some commands that have not been implemented yet.
   - BL_WRITE_MEM
   - BL_ERASE_MEM
   - BL_WRITE_PROTECT
+  - BL_WRITE_UNPROTECT
 
 - Not done
   - BL_ERASE_MEM_EXT
   - BL_SPECIAL
   - BL_SPECIAL_EXT
-  - BL_WRITE_UNPROTECT
   - BL_READ_PROTECT
   - BL_READ_UNPROTECT
   - BL_GET_CHECKSUM

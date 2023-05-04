@@ -28,16 +28,16 @@
     _(jump_to_app, 0x21, 0)       \
     _(write_mem, 0x31, 1)         \
     _(erase_mem, 0x43, 1)         \
-    _(write_protect, 0x63, 1)
+    _(write_protect, 0x63, 1)     \
+    _(write_unprotect, 0x73, 1)
 
 /* unimplement command list */
-#define BL_UNIMP_CMD_LIST    \
-    _(erase_mem_ext, 0x44)   \
-    _(special, 0x50)         \
-    _(special_ext, 0x51)     \
-    _(write_unprotect, 0x73) \
-    _(read_protect, 0x82)    \
-    _(read_unprotect, 0x92)  \
+#define BL_UNIMP_CMD_LIST   \
+    _(erase_mem_ext, 0x44)  \
+    _(special, 0x50)        \
+    _(special_ext, 0x51)    \
+    _(read_protect, 0x82)   \
+    _(read_unprotect, 0x92) \
     _(get_checksum, 0xA1)
 
 enum bl_cmd_code_list {
@@ -279,7 +279,7 @@ static void do_write_protect(struct bl_command *command UNUSED)
     /* check flash operation is on */
     if (flash_is_on()) {
         /* send erase failed to host */
-        bl_send_data(&res, bl_erase_mem_len);
+        bl_send_data(&res, bl_write_protect_len);
         return;
     }
 
@@ -298,7 +298,28 @@ static void do_write_protect(struct bl_command *command UNUSED)
 /* handle BL_WRITE_UNPROTECT
  * Disable the write protection for all flash memory sectors
  */
-static void do_write_unprotect(struct bl_command *command UNUSED) {}
+static void do_write_unprotect(struct bl_command *command UNUSED)
+{
+    uint8_t res = 0;
+
+    /* check flash operation is on */
+    if (flash_is_on()) {
+        /* send erase failed to host */
+        bl_send_data(&res, bl_write_unprotect_len);
+        return;
+    }
+
+    /* unlock sequence */
+    flash_unlock_sequence();
+    /* option unlock sequence */
+    flash_opt_unlock_sequence();
+    /* write protection */
+    res = flash_write_unprotection();
+    /* enable lock */
+    flash_set_lock();
+
+    bl_send_data(&res, bl_write_unprotect_len);
+}
 
 /* handle BL_READ_PROTECT
  * Enable the read protection

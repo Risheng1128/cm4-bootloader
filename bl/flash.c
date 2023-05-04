@@ -52,7 +52,7 @@
 /* Option byte organization
  * address    | [31:24] | [23:16] | [15:8]  | [7:0]
  * 0x1FFFF800 |  nUser  |  User   |  nRDP   |  RDP
- * 0x1FFFF804 |  nData1 |  Data   |  nData0 |  Data0
+ * 0x1FFFF804 |  nData1 |  Data1  |  nData0 |  Data0
  * 0x1FFFF808 |  nWRP1  |  WRP1   |  nWRP0  |  WRP0
  * 0x1FFFF80C |  nWRP3  |  WRP3   |  nWRP2  |  WRP2
  */
@@ -122,6 +122,37 @@ static void flash_assign_wrp(uint8_t page, uint16_t *wrp)
     } else { /* 62 <= page < 256 */
         wrp[3] &= ~(1 << 7);
     }
+}
+
+/* get current option bytes */
+static void flash_get_opt_bytes(struct opt_bytes *opt_bytes)
+{
+    opt_bytes->rdp = *(uint16_t *) FLASH_OPT_BYTES_BASE;
+    opt_bytes->user = *(uint16_t *) (FLASH_OPT_BYTES_BASE + 2);
+    *(uint32_t *) opt_bytes->data = *(uint32_t *) (FLASH_OPT_BYTES_BASE + 4);
+    *(uint32_t *) opt_bytes->wrp = *(uint32_t *) (FLASH_OPT_BYTES_BASE + 8);
+    *(uint32_t *) (opt_bytes->wrp + 2) =
+        *(uint32_t *) (FLASH_OPT_BYTES_BASE + 12);
+}
+
+static bool flash_write_opt_bytes(struct opt_bytes *opt_bytes, uint8_t len)
+{
+    uint16_t *flash_opt_byte = (uint16_t *) FLASH_OPT_BYTES_BASE;
+    uint16_t *user_opt_byte = (uint16_t *) opt_bytes;
+    /* assign option bytes */
+    for (uint8_t i = 0; i < len; i++) {
+        /* write the data */
+        flash_opt_byte[i] = user_opt_byte[i];
+
+        /* wait flash operation complete */
+        WAIT_BSY();
+
+        /* check EOP */
+        if (!flash_check_eop(FLASH_CR_OPTPG | FLASH_CR_OPTWRE)) {
+            return false;
+        }
+    }
+    return true;
 }
 
 /* enable lock */
@@ -233,6 +264,10 @@ bool flash_mass_erase(void)
 /* perform write protection operation */
 bool flash_write_protection(uint8_t *page, uint8_t page_num)
 {
+    struct opt_bytes opt_bytes;
+
+    /* save current option bytes */
+    flash_get_opt_bytes(&opt_bytes);
     if (!flash_opt_erase()) {
         return false;
     }
@@ -240,32 +275,38 @@ bool flash_write_protection(uint8_t *page, uint8_t page_num)
     /* enable OPTPG */
     FLASH_CR |= FLASH_CR_OPTPG;
 
-    /* default option bytes */
-    struct opt_bytes opt_bytes = {
-        .rdp = 0xaa,
-        .user = 0xff,
-        .data = {0xff, 0xff},
-        .wrp = {0xff, 0xff, 0xff, 0xff},
-    };
-
     for (uint8_t i = 0; i < page_num; i++) {
         flash_assign_wrp(page[i], opt_bytes.wrp);
     }
 
-    uint16_t *flash_opt_byte = (uint16_t *) FLASH_OPT_BYTES_BASE;
-    uint16_t *user_opt_byte = (uint16_t *) &opt_bytes;
-    /* assign option bytes */
-    for (uint8_t i = 0; i < 8; i++) {
-        /* write the data */
-        flash_opt_byte[i] = user_opt_byte[i];
+    /* write all option bytes */
+    if (!flash_write_opt_bytes(&opt_bytes, 8)) {
+        return false;
+    }
 
-        /* wait flash operation complete */
-        WAIT_BSY();
+    /* disable OPTWRE and OPTPG */
+    FLASH_CR &= ~(FLASH_CR_OPTPG | FLASH_CR_OPTWRE);
+    return true;
+}
 
-        /* check EOP */
-        if (!flash_check_eop(FLASH_CR_OPTPG | FLASH_CR_OPTWRE)) {
-            return false;
-        }
+/* perform write protection operation */
+bool flash_write_unprotection(void)
+{
+    struct opt_bytes opt_bytes;
+
+    /* save current option bytes */
+    flash_get_opt_bytes(&opt_bytes);
+    /* erase option bytes */
+    if (!flash_opt_erase()) {
+        return false;
+    }
+
+    /* enable OPTPG */
+    FLASH_CR |= FLASH_CR_OPTPG;
+
+    /* write half option bytes */
+    if (!flash_write_opt_bytes(&opt_bytes, 4)) {
+        return false;
     }
 
     /* disable OPTWRE and OPTPG */
