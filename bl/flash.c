@@ -34,6 +34,8 @@
 #define FLASH_CR_LOCK (1 << 7)
 /* option bytes write enable */
 #define FLASH_CR_OPTWRE (1 << 9)
+/* force option byte loading */
+#define FLASH_CR_OBL_LAUNCH (1 << 13)
 
 /* end of operation */
 #define FLASH_SR_EOP (1 << 5)
@@ -313,4 +315,10 @@ bool flash_write_unprotect(void)
     /* disable OPTWRE and OPTPG */
     FLASH_CR &= ~(FLASH_CR_OPTPG | FLASH_CR_OPTWRE);
     return true;
+}
+
+/* perform force option byte loading */
+void flash_reload_opt_bytes(void)
+{
+    FLASH_CR |= FLASH_CR_OBL_LAUNCH;
 }

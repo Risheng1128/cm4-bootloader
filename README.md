@@ -114,11 +114,11 @@ However, there are still some commands that have not been implemented yet.
   - BL_ERASE_MEM
   - BL_WRITE_PROTECT
   - BL_WRITE_UNPROTECT
+  - BL_RELOAD_OPT_BYTES
 
 - Not done
   - BL_READ_PROTECT
   - BL_READ_UNPROTECT
-  - BL_RELOAD_OPT_BYTES
 
 ## Communicate with host
 `cm4-bootloader` uses USART to send and receive data. The following picture shows how bootloader to communicate with host.

@@ -378,9 +378,27 @@ def do_read_unprotect(port):
 
 '''
 Reload option bytes
+
+Command format:
++--------------+-------------+-----+
+| command code | buffer size | CRC |
++--------------+-------------+-----+
 '''
 def do_reload_opt_bytes(port):
-    pass
+    buffer = command_package(const.BL_RELOAD_OPT_BYTES,
+                             const.BL_RELOAD_OPT_BYTES_LEN)
+    buffer.append_crc()
+    buffer.send_command(port)
+    print(' Reload option bytes ...')
+
+    # read ACK/NACK
+    if utility.serial_read_to_int(port, 1) == const.NACK:
+        print(' Read NACK')
+        return
+
+    # reply length is zero
+    _ = utility.serial_read_to_int(port, 1)
+    print(' Reload option bytes success')
 
 def decode_command_code(port, screen, command):
     print(' Command --> ', command)

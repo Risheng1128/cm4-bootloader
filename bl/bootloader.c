@@ -29,13 +29,13 @@
     _(write_mem, 0x31, 1)         \
     _(erase_mem, 0x43, 1)         \
     _(write_protect, 0x63, 1)     \
-    _(write_unprotect, 0x73, 1)
+    _(write_unprotect, 0x73, 1)   \
+    _(reload_opt_bytes, 0xA1, 0)
 
 /* unimplement command list */
-#define BL_UNIMP_CMD_LIST   \
-    _(read_protect, 0x82)   \
-    _(read_unprotect, 0x92) \
-    _(reload_opt_bytes, 0xA1)
+#define BL_UNIMP_CMD_LIST \
+    _(read_protect, 0x82) \
+    _(read_unprotect, 0x92)
 
 enum bl_cmd_code_list {
 #define _(cmd, code, len) bl_##cmd##_cmd = code,
@@ -314,7 +314,11 @@ static void do_read_unprotect(struct bl_command *command UNUSED) {}
 /* handle BL_RELOAD_OPT_BYTES
  * Reload option bytes
  */
-static void do_reload_opt_bytes(struct bl_command *command UNUSED) {}
+static void do_reload_opt_bytes(struct bl_command *command UNUSED)
+{
+    /* reload option bytes */
+    flash_reload_opt_bytes();
+}
 
 #define CMD_HANDLER(cmd, len)                                    \
     static void bl_##cmd(struct bl_command *command)             \

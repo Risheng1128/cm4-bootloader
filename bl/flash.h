@@ -44,3 +44,6 @@ bool flash_write_protect(uint8_t *page, uint8_t page_num);
 
 /* perform write protection operation */
 bool flash_write_unprotect(void);
+
+/* perform force option byte loading */
+void flash_reload_opt_bytes(void);
