@@ -51,6 +51,11 @@
 #define FLASH_UNLOCK_KEY2 0xCDEF89ABU
 #define FLASH_OPT_BYTES_BASE 0x1FFFF800U
 
+/* read protection level */
+#define FLASH_RDP_LEVEL0 0xAA
+#define FLASH_RDP_LEVEL1 0xBB /* except 0xAA and 0xCC */
+#define FLASH_RDP_LEVEL2 0xCC
+
 /* Option byte organization
  * address    | [31:24] | [23:16] | [15:8]  | [7:0]
  * 0x1FFFF800 |  nUser  |  User   |  nRDP   |  RDP
@@ -309,6 +314,35 @@ bool flash_write_unprotect(void)
 
     /* write half option bytes */
     if (!write_opt_bytes(&opt_bytes, 4)) {
+        return false;
+    }
+
+    /* disable OPTWRE and OPTPG */
+    FLASH_CR &= ~(FLASH_CR_OPTPG | FLASH_CR_OPTWRE);
+    return true;
+}
+
+/* perform read protection operation */
+bool flash_read_protect(uint8_t level)
+{
+    struct opt_bytes opt_bytes;
+    uint16_t rdp_level[3] = {FLASH_RDP_LEVEL0, FLASH_RDP_LEVEL1,
+                             FLASH_RDP_LEVEL2};
+
+    /* save current option bytes */
+    read_opt_bytes(&opt_bytes);
+    if (!opt_erase()) {
+        return false;
+    }
+
+    /* enable OPTPG */
+    FLASH_CR |= FLASH_CR_OPTPG;
+
+    /* write RDP */
+    opt_bytes.rdp = rdp_level[level];
+
+    /* write all option bytes */
+    if (!write_opt_bytes(&opt_bytes, 8)) {
         return false;
     }
 

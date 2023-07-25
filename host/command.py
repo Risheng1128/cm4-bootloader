@@ -366,9 +366,35 @@ def do_write_unprotect(port):
 
 '''
 Enable the read protection
+
+Command format:
++--------------+-------------+-----------------------+-----+
+| command code | buffer size | read protection level | CRC |
++--------------+-------------+-----------------------+-----+
 '''
 def do_read_protect(port):
-    pass
+    print(' Input the memory protection level (0 ~ 2)')
+    level = int(input())
+    if level < 0 or level > 2:
+        print(' Incorrect protection level')
+
+    buffer = command_package(const.BL_READ_PROTECT,
+                             const.BL_READ_PROTECT_LEN)
+    buffer.append(level)
+    buffer.append_crc()
+    buffer.send_command(port)
+    print(' Do the read protection ...')
+
+    # read ACK/NACK
+    if utility.serial_read_to_int(port, 1) == const.NACK:
+        print(' Read NACK')
+        return
+
+    reply_len = utility.serial_read_to_int(port, 1)
+    if utility.serial_read_to_int(port, reply_len):
+        print(' Read protection success')
+    else:
+        print(' Read protection failed')
 
 '''
 Disable the read protection

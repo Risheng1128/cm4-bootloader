@@ -114,10 +114,10 @@ However, there are still some commands that have not been implemented yet.
   - BL_ERASE_MEM
   - BL_WRITE_PROTECT
   - BL_WRITE_UNPROTECT
+  - BL_READ_PROTECT
   - BL_RELOAD_OPT_BYTES
 
 - Not done
-  - BL_READ_PROTECT
   - BL_READ_UNPROTECT
 
 ## Communicate with host
@@ -200,6 +200,15 @@ Disable the write protection for all flash memory sectors
 +--------------+-------------+----------+
 | command code | buffer size | CRC data |
 +--------------+-------------+----------+
+```
+
+#### Read protection option bytes command format
+Set the RDP option byte in option bytes.
+- The buffer size is 1.
+```
++--------------+-------------+-----------------------+----------+
+| command code | buffer size | read protection level | CRC data |
++--------------+-------------+-----------------------+----------+
 ```
 
 ## Reference

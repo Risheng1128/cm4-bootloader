@@ -30,12 +30,11 @@
     _(erase_mem, 0x43, 1)         \
     _(write_protect, 0x63, 1)     \
     _(write_unprotect, 0x73, 1)   \
+    _(read_protect, 0x82, 1)      \
     _(reload_opt_bytes, 0xA1, 0)
 
 /* unimplement command list */
-#define BL_UNIMP_CMD_LIST \
-    _(read_protect, 0x82) \
-    _(read_unprotect, 0x92)
+#define BL_UNIMP_CMD_LIST _(read_unprotect, 0x92)
 
 enum bl_cmd_code_list {
 #define _(cmd, code, len) bl_##cmd##_cmd = code,
@@ -304,7 +303,30 @@ static void do_write_unprotect(struct bl_command *command UNUSED)
 /* handle BL_READ_PROTECT
  * Enable the read protection
  */
-static void do_read_protect(struct bl_command *command UNUSED) {}
+static void do_read_protect(struct bl_command *command UNUSED)
+{
+    /* read protection level */
+    uint8_t level = command->buffer[0];
+    uint8_t res = 0;
+
+    /* check flash operation is on */
+    if (flash_is_on()) {
+        /* send read protection failed to host */
+        bl_send_data(&res, bl_read_protect_len);
+        return;
+    }
+
+    /* unlock sequence */
+    flash_unlock_sequence();
+    /* option unlock sequence */
+    flash_opt_unlock_sequence();
+    /* write protection */
+    res = flash_read_protect(level);
+    /* enable lock */
+    flash_set_lock();
+
+    bl_send_data(&res, bl_write_unprotect_len);
+}
 
 /* handle BL_READ_UNPROTECT
  * Disable the read protection
