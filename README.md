@@ -24,13 +24,8 @@ $ sudo apt-get -y install gcc-arm-none-eabi
 
 Install [stlink](https://github.com/stlink-org/stlink):
 ```shell
-$ sudo apt-get install git cmake libusb-1.0-0-dev
-$ git clone https://github.com/stlink-org/stlink && cd stlink
-$ cmake .
-$ make
-$ cd bin && sudo cp st-* /usr/local/bin
-$ cd ../lib && sudo cp *.so* /lib32
-$ cd ../config/udev/rules.d/ && sudo cp 49-stlinkv* /etc/udev/rules.d/
+$ sudo apt-get update
+$ sudo apt-get -y install stlink-tools
 ```
 
 Install [OpenOCD](https://openocd.org/):
