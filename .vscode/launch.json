@@ -1,0 +1,20 @@
+{
+    "version": "0.2.0",
+    "configurations": 
+    [
+        {
+            "name": "Debug (openocd)",
+            "cwd": "${workspaceRoot}",
+            "executable": "build/boot-main",
+            "request": "launch",
+            "type": "cortex-debug",
+            "targetId": "STM32F303ZE",
+            "svdFile": "stm32f303.svd",
+            "servertype": "openocd",
+            "armToolchainPath": "/usr/bin/",
+            "configFiles": [
+                "board/st_nucleo_f3.cfg",
+            ],
+        }
+    ]
+}
