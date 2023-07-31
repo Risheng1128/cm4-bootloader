@@ -30,9 +30,6 @@ disassembly: $(BL-TARGET) $(APP-TARGET)
 	$(DUMP) -d $^ > $(BL-TARGET).S
 	$(DUMP) -d $(APP-TARGET) > $(APP-TARGET).S
 
-debug:
-	openocd -f board/st_nucleo_f3.cfg
-
 upload:
         # burn the application first
 	openocd -f interface/stlink.cfg -f target/stm32f3x.cfg -c " program $(APP-TARGET) verify exit "

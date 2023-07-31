@@ -49,19 +49,12 @@ $ make host
 ```
 
 ## Debug
-In `cm4-bootloader`, it uses [OpenOCD](https://openocd.org/) to open the debug mode of processor. We can use the following command:
-```shell
-$ make debug
-```
+The toolchain downloaded using the command `sudo apt-get -y install gcc-arm-none-eabi` does not include `arm-none-eabi-gdb`. Therefore, it needs to be added separately, which can be downloaded from [Arm GNU Toolchain Downloads](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads). Then. adding `arm-none-eabi-gdb` into path `/usr/bin/`.
 
-After typing the command, the next step is opening gdb to connect to rhe openocd.
+In `cm4-bootloader`, it uses [cortex-debug](https://github.com/Marus/cortex-debug) to trace the source code and find the bugs. Before using cortex-debug, the following libraries that are necessaty for `arm-none-eabi-gdb` need to be installed.
 ```shell
-$ arm-none-eabi-gdb
-```
-
-Connect to the openocd:
-```shell
-$ target remote localhost:3333
+$ sudo apt-get install libncursesw5
+$ sudo apt install python3.8
 ```
 
 ## Memory layout
