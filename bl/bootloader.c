@@ -33,9 +33,6 @@
     _(read_protect, 0x82, 1)      \
     _(reload_opt_bytes, 0xA1, 0)
 
-/* unimplement command list */
-#define BL_UNIMP_CMD_LIST _(read_unprotect, 0x92)
-
 enum bl_cmd_code_list {
 #define _(cmd, code, len) bl_##cmd##_cmd = code,
     BL_CMD_LIST
@@ -327,11 +324,6 @@ static void do_read_protect(struct bl_command *command UNUSED)
 
     bl_send_data(&res, bl_write_unprotect_len);
 }
-
-/* handle BL_READ_UNPROTECT
- * Disable the read protection
- */
-static void do_read_unprotect(struct bl_command *command UNUSED) {}
 
 /* handle BL_RELOAD_OPT_BYTES
  * Reload option bytes

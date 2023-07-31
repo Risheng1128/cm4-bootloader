@@ -397,12 +397,6 @@ def do_read_protect(port):
         print(' Read protection failed')
 
 '''
-Disable the read protection
-'''
-def do_read_unprotect(port):
-    pass
-
-'''
 Reload option bytes
 
 Command format:
@@ -451,8 +445,6 @@ def decode_command_code(port, screen, command):
             do_write_unprotect(port)
         case ('BL_READ_PROTECT'):
             do_read_protect(port)
-        case ('BL_READ_UNPROTECT'):
-            do_read_unprotect(port)
         case ('BL_RELOAD_OPT_BYTES'):
             do_reload_opt_bytes(port)
         case ('Exit'):

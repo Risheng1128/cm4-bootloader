@@ -11,9 +11,8 @@ command_list = {
     8: 'BL_WRITE_PROTECT',
     9: 'BL_WRITE_UNPROTECT',
     10: 'BL_READ_PROTECT',
-    11: 'BL_READ_UNPROTECT',
-    12: 'BL_RELOAD_OPT_BYTES',
-    13: 'Exit',
+    11: 'BL_RELOAD_OPT_BYTES',
+    12: 'Exit',
 }
 
 # bootloader command code list
@@ -28,7 +27,6 @@ BL_ERASE_MEM         = 0x43
 BL_WRITE_PROTECT     = 0x63
 BL_WRITE_UNPROTECT   = 0x73
 BL_READ_PROTECT      = 0x82
-BL_READ_UNPROTECT    = 0x92
 BL_RELOAD_OPT_BYTES  = 0xA1
 
 # bootloader command buffer length

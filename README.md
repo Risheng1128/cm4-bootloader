@@ -94,26 +94,7 @@ The following shows all commands provided by `cm4-bootloader`. It refers to [USA
 | BL_WRITE_PROTECT     | 0x63 | Enable the write protection for some sectors |
 | BL_WRITE_UNPROTECT   | 0x73 | Disable the write protection for all flash memory sectors |
 | BL_READ_PROTECT      | 0x82 | Enable the read protection |
-| BL_READ_UNPROTECT    | 0x92 | Disable the read protection |
 | BL_RELOAD_OPT_BYTES  | 0xA1 | Reload option bytes |
-
-However, there are still some commands that have not been implemented yet.
-- Done
-  - BL_GET_CMD
-  - BL_GET_VERSION
-  - BL_GET_ID
-  - BL_GET_PROTECT_LEVEL
-  - BL_READ_MEM
-  - BL_JUMP_TO_APP
-  - BL_WRITE_MEM
-  - BL_ERASE_MEM
-  - BL_WRITE_PROTECT
-  - BL_WRITE_UNPROTECT
-  - BL_READ_PROTECT
-  - BL_RELOAD_OPT_BYTES
-
-- Not done
-  - BL_READ_UNPROTECT
 
 ## Communicate with host
 `cm4-bootloader` uses USART to send and receive data. The following picture shows how bootloader to communicate with host.
